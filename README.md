@@ -1,7 +1,7 @@
 # SimuMac — Simulador Macroeconómico de Bolivia (2010–2014)
 
 [![Licencia MIT](https://img.shields.io/badge/Licencia-MIT-blue.svg)](LICENSE)
-[![Versión](https://img.shields.io/badge/Versión-1.0.0-brightgreen)](https://github.com/tu-usuario/simumac/releases)
+[![Versión](https://img.shields.io/badge/Versión-13.0.0-brightgreen)](https://github.com/tu-usuario/simumac/releases)
 [![Estado](https://img.shields.io/badge/Estado-estable-success)]()
 
 SimuMac es una herramienta interactiva de simulación macroeconómica diseñada para el análisis histórico, contrafactual e hipotético de la economía boliviana durante el período 2010–2014. Fue desarrollada como proyecto de tesis de grado para la carrera de Economía de la Universidad Mayor de San Simón (UMSS), Cochabamba, Bolivia.
