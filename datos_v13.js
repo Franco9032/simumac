@@ -1,4 +1,4 @@
-// SimuMac v13 — DATOS OBSERVADOS 2010-2014 (generado del Excel consolidado, no editar a mano)
+// SimuMac v13 — DATOS OBSERVADOS 2010-2014
 const DATOS_V13 = {
  "meta": {
   "fuente": "SimuMon_Bloques_1-7_Consolidado.xlsx",
