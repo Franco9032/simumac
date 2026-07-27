@@ -40,5 +40,4 @@ Visita la versión publicada en: simumac.netlify.app
 ### Opción 2: Ejecutar localmente
 1. Clona el repositorio:
    ```bash
-   git clone [https://github.com/tu-usuario/simumac.git](https://github.com/Franco9032/simumac
-   cd simumac
+   git clone [https://github.com/Franco9032/simumac.git]
