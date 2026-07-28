@@ -9,6 +9,7 @@
     --teal:#00847e; --teal-bg:#e0f5f4;
     --card-radius:18px;
   }
+
   @media(prefers-color-scheme:dark){
     :root{
       --bg:#000000; --bg2:#1c1c1e; --bg3:#2c2c2e;
