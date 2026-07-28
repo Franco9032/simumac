@@ -1,5 +1,5 @@
 /* ══════════════════════════════════════════════════════════════════════
-   BOLIVIA MACRO SIMULATOR - PUTO EL QUE LO COPIE XP
+   BOLIVIA MACRO SIMULATOR — PUTO EL QUE LO COPIE
    ══════════════════════════════════════════════════════════════════════ */
 
 /* ══ NAV ══ */
@@ -50,7 +50,7 @@ function setModoSimulacion() {
     const desc = document.getElementById('modo-desc');
     const banner = document.getElementById('banner-historico');
     const controles = document.querySelectorAll(
-        '#sp-fiscal input, #sp-fiscal button, #sp-monetario input, #sp-monetario button, #sp-credito input, #sp-credito button, #sp-externa input, #sel-umbral-phi, .policy-btn, #sl-choque-oferta'
+        '#sp-fiscal input, #sp-fiscal button, #sp-monetario input, #sp-monetario button, #sp-credito input, #sp-credito button, #sp-externa input, .policy-btn, #sl-choque-oferta'
     );
     const slRin = document.getElementById('sl-rin');
     const slCin = document.getElementById('sl-cin');
@@ -95,14 +95,14 @@ function applyPolicyCredito(tipo) {
 }
 
 /* ══ DATOS REALES 2010-2014 (EN MILES DE BS donde aplica) ══
-   Generados desde SimuMon_Bloques_1-7_Consolidado.xlsx vía DATOS_V13 (ver datos_v7.js).
+   Generados desde SimuMon_Bloques_1-7_Consolidado.xlsx vía DATOS_V14 (ver datos_v7.js).
    Mismo formato de objeto que v5 (m1..m4p, pib, inf, des, pob, inv, etc.), extendido a 5 años
    y con campos NUEVOS: inv_real_bs1990_miles (canal fiscal Opción B), cin_fiscal_mmbs
    (condicionalidad Canal C), precio_gas_usdton, deuda_externa_musd, salario_minimo,
    afiliados_sip, pea, desocupados, pobExt, tasa_activa_mn_prom/me_prom.
    null = ausencia real en la fuente (2010 sin Encuesta de Hogares: des/pea/desocupados/pob/pobExt) */
 const BASE = {};
-Object.keys(DATOS_V13.BASE).forEach(y => { BASE[y] = DATOS_V13.BASE[y]; });
+Object.keys(DATOS_V14.BASE).forEach(y => { BASE[y] = DATOS_V14.BASE[y]; });
 
 
 const KEYS   = ['m1', 'm1p', 'm2', 'm2p', 'm3', 'm3p', 'm4', 'm4p'];
@@ -242,7 +242,7 @@ function aplicarRegimen(key) {
 
     /* Etiqueta de solo lectura (ya no selector — se deriva del año base) */
     const label = document.getElementById('regimen-label');
-    if (label) label.textContent = (key === 'quiebre' ? '🔴 ' : '🟢 ') + r.label;
+    if (label) label.textContent = r.label;
 
     const desc = document.getElementById('regimen-desc');
     if (desc) desc.textContent = r.descripcion;
@@ -367,16 +367,16 @@ function initStaticCharts() {
         });
     }
     if (document.getElementById('c-tasas')) {
-        const meses = Object.keys(DATOS_V13.MENSUAL).sort();
+        const meses = Object.keys(DATOS_V14.MENSUAL).sort();
         new Chart(document.getElementById('c-tasas'), {
             type: 'line',
             data: {
                 labels: meses,
                 datasets: [
-                    { label: 'Activa MN', data: meses.map(k => DATOS_V13.MENSUAL[k].tasa_activa_mn), borderColor: '#1D9E75', pointRadius: 0, tension: .2 },
-                    { label: 'Activa ME', data: meses.map(k => DATOS_V13.MENSUAL[k].tasa_activa_me), borderColor: '#378ADD', pointRadius: 0, tension: .2 },
-                    { label: 'Pasiva MN', data: meses.map(k => DATOS_V13.MENSUAL[k].tasa_pasiva_mn), borderColor: '#BA7517', borderDash: [4, 3], pointRadius: 0, tension: .2 },
-                    { label: 'Pasiva ME', data: meses.map(k => DATOS_V13.MENSUAL[k].tasa_pasiva_me), borderColor: '#D85A30', borderDash: [4, 3], pointRadius: 0, tension: .2 },
+                    { label: 'Activa MN', data: meses.map(k => DATOS_V14.MENSUAL[k].tasa_activa_mn), borderColor: '#1D9E75', pointRadius: 0, tension: .2 },
+                    { label: 'Activa ME', data: meses.map(k => DATOS_V14.MENSUAL[k].tasa_activa_me), borderColor: '#378ADD', pointRadius: 0, tension: .2 },
+                    { label: 'Pasiva MN', data: meses.map(k => DATOS_V14.MENSUAL[k].tasa_pasiva_mn), borderColor: '#BA7517', borderDash: [4, 3], pointRadius: 0, tension: .2 },
+                    { label: 'Pasiva ME', data: meses.map(k => DATOS_V14.MENSUAL[k].tasa_pasiva_me), borderColor: '#D85A30', borderDash: [4, 3], pointRadius: 0, tension: .2 },
                 ]
             },
             options: {
@@ -388,7 +388,7 @@ function initStaticCharts() {
         });
     }
     if (document.getElementById('c-agg-compare')) {
-        const meses = Object.keys(DATOS_V13.MENSUAL).sort();
+        const meses = Object.keys(DATOS_V14.MENSUAL).sort();
         const colores = {
             m1: '#9FE1CB', m1p: '#1D9E75', m2: '#B9DDF8', m2p: '#378ADD',
             m3: '#D8CEF2', m3p: '#7A5FC7', m4: '#F6C9A6', m4p: '#D85A30'
@@ -399,7 +399,7 @@ function initStaticCharts() {
                 labels: meses,
                 datasets: KEYS.map((k, i) => ({
                     label: LABELS[i],
-                    data: meses.map(mes => DATOS_V13.MENSUAL[mes][k] / 1000),
+                    data: meses.map(mes => DATOS_V14.MENSUAL[mes][k] / 1000),
                     borderColor: colores[k],
                     borderDash: k.endsWith('p') ? [] : [3, 3],
                     pointRadius: 0, tension: .2, borderWidth: k.endsWith('p') ? 2 : 1.5
@@ -427,12 +427,12 @@ function fmt(n) { return Math.round(n).toLocaleString(); }
    % del PIB real, en la misma base de precios (Opción B, motor v7/v8). */
 function pibRealAnual(y) {
     let s = 0;
-    for (let t = 1; t <= 4; t++) s += DATOS_V13.TRIMESTRAL[`${y}T${t}`].pib_real;
+    for (let t = 1; t <= 4; t++) s += DATOS_V14.TRIMESTRAL[`${y}T${t}`].pib_real;
     return s;
 }
 function pibNominalAnual(y) {
     let s = 0;
-    for (let t = 1; t <= 4; t++) s += DATOS_V13.TRIMESTRAL[`${y}T${t}`].pib_nominal;
+    for (let t = 1; t <= 4; t++) s += DATOS_V14.TRIMESTRAL[`${y}T${t}`].pib_nominal;
     return s;
 }
 
@@ -611,9 +611,7 @@ function applyPolicy(policyKey) {
     /* Mover también el Canal C (CIN) — antes las políticas no lo tocaban */
     const slCin = document.getElementById('sl-cin');
     if (slCin) {
-        const cinMin = parseFloat(slCin.min) || -10000;
-        const cinMax = parseFloat(slCin.max) || 10000;
-        const nuevoCin = Math.max(cinMin, Math.min(cinMax, Math.round(b.cin_fiscal_mmbs + effects.cinDelta)));
+        const nuevoCin = Math.max(-10000, Math.min(10000, Math.round(b.cin_fiscal_mmbs + effects.cinDelta)));
         slCin.value = nuevoCin;
         onCanalSliderInputSilencioso('cin');
     }
@@ -712,6 +710,17 @@ function computeEffects() {
         dY_fiscal   *= penalidad;
         dY_credito  *= penalidad;
     }
+    /* CORRECCIÓN: capacidad_usada, calculada arriba, refleja el efecto BRUTO
+       sobre el PIB antes de aplicar la penalidad (dY_AC sin corregir). Más
+       abajo, ese mismo capacidad_usada se reutilizaba para calcular el
+       choque de oferta por saturación — pero el PIB que efectivamente se
+       reporta ya viene penalizado. Esto producía un desglose inconsistente:
+       un efecto de PIB modesto (ya corregido) combinado con una inflación
+       de oferta calculada sobre un escenario bruto muy superior a la
+       realidad reportada. Se recalcula la capacidad usada con los valores
+       YA penalizados, para que el desglose de inflación sea consistente
+       con el PIB que efectivamente se muestra al usuario. */
+    const capacidad_usada_final = (b.pib + dY_fiscal + dY_credito) / (b.pib * COEF.max_capacity);
 
     /* ── CANAL B: MONETARIO ATENUADO (θ_MF dinámico) ───────────────── */
     const dM_liq      = 0.60 * dM1 + 0.40 * dM2;
@@ -732,8 +741,8 @@ function computeEffects() {
     const dM_pond = 0.20 * dM1 + 0.30 * dM2 + 0.30 * dM3 + 0.20 * dM4p;
     let delta_inf_dem = (dM_pond * 100 - dY_total) * 0.35;
     let delta_inf_ofe = 0;
-    if (capacidad_usada > 0.95) {
-        delta_inf_ofe = (capacidad_usada - 0.95) * 3.0;
+    if (capacidad_usada_final > 0.95) {
+        delta_inf_ofe = (capacidad_usada_final - 0.95) * 3.0;
         delta_inf_dem = delta_inf_dem * 0.7;
     }
     /* Choque de oferta simulado (climático/logístico) — palanca propia,
@@ -742,8 +751,12 @@ function computeEffects() {
     const selChoque = document.getElementById('sl-choque-oferta');
     const choqueOferta = selChoque ? parseFloat(selChoque.value) : 0;
     delta_inf_ofe += choqueOferta;
+    /* CORRECCIÓN: antes solo mostraba choqueOferta (el slider), ocultando el
+       componente de saturación de capacidad cuando estaba activo. Ahora
+       muestra el total real de Δπ_oferta, que es lo que efectivamente se
+       suma a la inflación — coherente con lo que el usuario ve en cn-dinf. */
     const setCOferta = document.getElementById('cn-dinf-ofe');
-    if (setCOferta) setCOferta.textContent = (choqueOferta >= 0 ? '+' : '') + choqueOferta.toFixed(2) + ' pp';
+    if (setCOferta) setCOferta.textContent = (delta_inf_ofe >= 0 ? '+' : '') + delta_inf_ofe.toFixed(2) + ' pp';
     const delta_inf    = delta_inf_dem + delta_inf_ofe;
     const newInf       = +(b.inf    + delta_inf).toFixed(2);
     const newInfNuc    = +(b.infNuc + delta_inf_dem).toFixed(2);
@@ -1067,7 +1080,7 @@ function onCanalSliderInputSilencioso(cual) {
 
 /* ══ GRANULARIDAD DE SERIES (mes/trimestre/semestre/año) ══════════════
    Afecta los gráficos de agregados monetarios e inflación (Bloque 3/5),
-   que son las series con dato mensual real disponible en DATOS_V13.MENSUAL.
+   que son las series con dato mensual real disponible en DATOS_V14.MENSUAL.
    El resto del simulador (KPIs, canales) sigue operando sobre el año base. */
 let granularidadActiva = 'anual';
 function updateGranularidad() {
@@ -1077,15 +1090,15 @@ function updateGranularidad() {
 }
 
 function agregarSeriesPorGranularidad(campo) {
-    const meses = Object.keys(DATOS_V13.MENSUAL).filter(k => k.startsWith(String(year)) || true);
-    const todasClaves = Object.keys(DATOS_V13.MENSUAL).sort();
+    const meses = Object.keys(DATOS_V14.MENSUAL).filter(k => k.startsWith(String(year)) || true);
+    const todasClaves = Object.keys(DATOS_V14.MENSUAL).sort();
     if (granularidadActiva === 'mensual') {
-        return todasClaves.map(k => ({ label: k, val: DATOS_V13.MENSUAL[k][campo] }));
+        return todasClaves.map(k => ({ label: k, val: DATOS_V14.MENSUAL[k][campo] }));
     }
     if (granularidadActiva === 'trimestral') {
         const out = [];
         for (let i = 0; i < todasClaves.length; i += 3) {
-            const grupo = todasClaves.slice(i, i + 3).map(k => DATOS_V13.MENSUAL[k][campo]).filter(v => v != null);
+            const grupo = todasClaves.slice(i, i + 3).map(k => DATOS_V14.MENSUAL[k][campo]).filter(v => v != null);
             if (!grupo.length) continue;
             const anio = todasClaves[i].slice(0, 4), tri = Math.floor(i / 3) % 4 + 1;
             out.push({ label: `${anio}T${tri}`, val: grupo.reduce((a, b) => a + b, 0) / grupo.length });
@@ -1095,7 +1108,7 @@ function agregarSeriesPorGranularidad(campo) {
     if (granularidadActiva === 'semestral') {
         const out = [];
         for (let i = 0; i < todasClaves.length; i += 6) {
-            const grupo = todasClaves.slice(i, i + 6).map(k => DATOS_V13.MENSUAL[k][campo]).filter(v => v != null);
+            const grupo = todasClaves.slice(i, i + 6).map(k => DATOS_V14.MENSUAL[k][campo]).filter(v => v != null);
             if (!grupo.length) continue;
             const anio = todasClaves[i].slice(0, 4), sem = Math.floor(i / 6) % 2 + 1;
             out.push({ label: `${anio}S${sem}`, val: grupo.reduce((a, b) => a + b, 0) / grupo.length });
@@ -1103,7 +1116,7 @@ function agregarSeriesPorGranularidad(campo) {
         return out;
     }
     /* anual: diciembre de cada año (saldo a fin de período, coherente con BASE) */
-    return [2010, 2011, 2012, 2013, 2014].map(y => ({ label: String(y), val: DATOS_V13.MENSUAL[`${y}-12`][campo] }));
+    return [2010, 2011, 2012, 2013, 2014].map(y => ({ label: String(y), val: DATOS_V14.MENSUAL[`${y}-12`][campo] }));
 }
 
 let aggTimeChart = null;
@@ -1145,7 +1158,7 @@ let chPib = null, chPibn = null, chInf = null;
 function pibAnualDesdeTrimestral(campo) {
     return [2010, 2011, 2012, 2013, 2014].map(y => {
         let s = 0;
-        for (let t = 1; t <= 4; t++) s += DATOS_V13.TRIMESTRAL[`${y}T${t}`][campo];
+        for (let t = 1; t <= 4; t++) s += DATOS_V14.TRIMESTRAL[`${y}T${t}`][campo];
         return s / 1000; // miles → millones
     });
 }
@@ -1167,8 +1180,8 @@ function buildPanoramaCharts(gran) {
         dataNom = pibAnualDesdeTrimestral('pib_nominal');
     } else {
         labelsPib = MOTOR_TRIMS();
-        dataReal = labelsPib.map(t => DATOS_V13.TRIMESTRAL[t].pib_real / 1000);
-        dataNom = labelsPib.map(t => DATOS_V13.TRIMESTRAL[t].pib_nominal / 1000);
+        dataReal = labelsPib.map(t => DATOS_V14.TRIMESTRAL[t].pib_real / 1000);
+        dataNom = labelsPib.map(t => DATOS_V14.TRIMESTRAL[t].pib_nominal / 1000);
     }
     if (srcPib) srcPib.textContent = `INE Cuadro 6.01.01 · precios constantes Bs 1990 · ${pibGran}${avisoPib}`;
     if (srcPibn) srcPibn.textContent = `INE Cuadro 6.01.02 · ${pibGran}${avisoPib}`;
@@ -1196,14 +1209,14 @@ function buildPanoramaCharts(gran) {
     } else if (infGran === 'trimestral') {
         labelsInf = MOTOR_TRIMS();
         const meses3 = labelsInf.map(t => { const y = t.slice(0, 4), tq = t.slice(4); const m = { T1: '03', T2: '06', T3: '09', T4: '12' }[tq]; return `${y}-${m}`; });
-        dGen = meses3.map(k => DATOS_V13.MENSUAL[k].inf_general_12m);
-        dNuc = meses3.map(k => DATOS_V13.MENSUAL[k].inf_nucleo_12m);
-        dSub = meses3.map(k => DATOS_V13.MENSUAL[k].inf_subyacente_12m);
+        dGen = meses3.map(k => DATOS_V14.MENSUAL[k].inf_general_12m);
+        dNuc = meses3.map(k => DATOS_V14.MENSUAL[k].inf_nucleo_12m);
+        dSub = meses3.map(k => DATOS_V14.MENSUAL[k].inf_subyacente_12m);
     } else {
-        labelsInf = Object.keys(DATOS_V13.MENSUAL).sort();
-        dGen = labelsInf.map(k => DATOS_V13.MENSUAL[k].inf_general_12m);
-        dNuc = labelsInf.map(k => DATOS_V13.MENSUAL[k].inf_nucleo_12m);
-        dSub = labelsInf.map(k => DATOS_V13.MENSUAL[k].inf_subyacente_12m);
+        labelsInf = Object.keys(DATOS_V14.MENSUAL).sort();
+        dGen = labelsInf.map(k => DATOS_V14.MENSUAL[k].inf_general_12m);
+        dNuc = labelsInf.map(k => DATOS_V14.MENSUAL[k].inf_nucleo_12m);
+        dSub = labelsInf.map(k => DATOS_V14.MENSUAL[k].inf_subyacente_12m);
     }
     if (srcInf) srcInf.textContent = `BCB Memoria 2013 · INE/UDAPE IPC · ${infGran}`;
     if (chInf) chInf.destroy();
@@ -1233,8 +1246,8 @@ function buildDatosReal(gran) {
     let labels, series;
     if (gran === 'trimestral') {
         labels = MOTOR_TRIMS();
-        series = { c: labels.map(t => DATOS_V13.TRIMESTRAL[t].consumo_priv / 1000), g: labels.map(t => DATOS_V13.TRIMESTRAL[t].consumo_pub / 1000),
-                   i: labels.map(t => DATOS_V13.TRIMESTRAL[t].fbkf / 1000), x: labels.map(t => DATOS_V13.TRIMESTRAL[t].exportaciones / 1000), m: labels.map(t => DATOS_V13.TRIMESTRAL[t].importaciones / 1000) };
+        series = { c: labels.map(t => DATOS_V14.TRIMESTRAL[t].consumo_priv / 1000), g: labels.map(t => DATOS_V14.TRIMESTRAL[t].consumo_pub / 1000),
+                   i: labels.map(t => DATOS_V14.TRIMESTRAL[t].fbkf / 1000), x: labels.map(t => DATOS_V14.TRIMESTRAL[t].exportaciones / 1000), m: labels.map(t => DATOS_V14.TRIMESTRAL[t].importaciones / 1000) };
     } else {
         labels = ['2010', '2011', '2012', '2013', '2014'];
         const anual = campo => pibAnualDesdeTrimestral(campo);
@@ -1265,7 +1278,7 @@ function buildDatosBloques() {
     if (document.getElementById('c-datos-fiscal')) {
         new Chart(document.getElementById('c-datos-fiscal'), {
             type: 'bar',
-            data: { labels: years5, datasets: [{ label: 'CIN fiscal (MM Bs)', data: years5.map(y => DATOS_V13.BASE[y].cin_fiscal_mmbs), backgroundColor: years5.map(y => DATOS_V13.BASE[y].cin_fiscal_mmbs > 0 ? '#D85A30' : '#5DCAA5'), borderRadius: 4 }] },
+            data: { labels: years5, datasets: [{ label: 'CIN fiscal (MM Bs)', data: years5.map(y => DATOS_V14.BASE[y].cin_fiscal_mmbs), backgroundColor: years5.map(y => DATOS_V14.BASE[y].cin_fiscal_mmbs > 0 ? '#D85A30' : '#5DCAA5'), borderRadius: 4 }] },
             options: { ...baseOpts(), plugins: { legend: { display: false } } }
         });
     }
@@ -1274,8 +1287,8 @@ function buildDatosBloques() {
         new Chart(document.getElementById('c-datos-externo'), {
             type: 'line',
             data: { labels: years5, datasets: [
-                { label: 'RIN (meses)', data: years5.map(y => DATOS_V13.BASE[y].rin_meses), borderColor: '#1D9E75', yAxisID: 'y', tension: .25 },
-                { label: 'Deuda externa (MM $us)', data: years5.map(y => DATOS_V13.BASE[y].deuda_externa_musd), borderColor: '#D85A30', yAxisID: 'y1', tension: .25 },
+                { label: 'RIN (meses)', data: years5.map(y => DATOS_V14.BASE[y].rin_meses), borderColor: '#1D9E75', yAxisID: 'y', tension: .25 },
+                { label: 'Deuda externa (MM $us)', data: years5.map(y => DATOS_V14.BASE[y].deuda_externa_musd), borderColor: '#D85A30', yAxisID: 'y1', tension: .25 },
             ] },
             options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true, labels: { color: txtC(), font: { size: 10 } } } },
                 scales: { x: { grid: { color: gridC() }, ticks: { color: txtC(), font: { size: 11 } } }, y: { position: 'left', grid: { color: gridC() }, ticks: { color: txtC(), font: { size: 10 } } }, y1: { position: 'right', grid: { display: false }, ticks: { color: txtC(), font: { size: 10 } } } } }
@@ -1283,12 +1296,12 @@ function buildDatosBloques() {
     }
     // Precios (inflación mensual + shock 2013)
     if (document.getElementById('c-datos-precios')) {
-        const meses = Object.keys(DATOS_V13.MENSUAL).sort();
+        const meses = Object.keys(DATOS_V14.MENSUAL).sort();
         new Chart(document.getElementById('c-datos-precios'), {
             type: 'line',
             data: { labels: meses, datasets: [
-                { label: 'IPC Alimentos', data: meses.map(k => DATOS_V13.MENSUAL[k].ipc_alimentos), borderColor: '#D85A30', pointRadius: 0, tension: .2 },
-                { label: 'Inflación general 12m (%)', data: meses.map(k => DATOS_V13.MENSUAL[k].inf_general_12m), borderColor: '#378ADD', pointRadius: 0, tension: .2, yAxisID: 'y1' },
+                { label: 'IPC Alimentos', data: meses.map(k => DATOS_V14.MENSUAL[k].ipc_alimentos), borderColor: '#D85A30', pointRadius: 0, tension: .2 },
+                { label: 'Inflación general 12m (%)', data: meses.map(k => DATOS_V14.MENSUAL[k].inf_general_12m), borderColor: '#378ADD', pointRadius: 0, tension: .2, yAxisID: 'y1' },
             ] },
             options: { responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false },
                 plugins: { legend: { display: true, labels: { color: txtC(), font: { size: 10 } } } },
@@ -1310,11 +1323,11 @@ function buildDatosBloques() {
     }
     // Contexto — ONI mensual (aplanado desde ONI_ANUAL por estación)
     if (document.getElementById('c-datos-oni')) {
-        const meses = Object.keys(DATOS_V13.MENSUAL).sort();
+        const meses = Object.keys(DATOS_V14.MENSUAL).sort();
         new Chart(document.getElementById('c-datos-oni'), {
             type: 'line',
             data: { labels: meses, datasets: [
-                { label: 'ONI (anomalía °C)', data: meses.map(k => DATOS_V13.MENSUAL[k].oni), borderColor: '#378ADD', backgroundColor: 'rgba(55,138,221,0.08)', fill: true, pointRadius: 0, tension: .3 },
+                { label: 'ONI (anomalía °C)', data: meses.map(k => DATOS_V14.MENSUAL[k].oni), borderColor: '#378ADD', backgroundColor: 'rgba(55,138,221,0.08)', fill: true, pointRadius: 0, tension: .3 },
             ] },
             options: { responsive: true, maintainAspectRatio: false,
                 plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => 'ONI: ' + c.raw.toFixed(2) } } },
@@ -1326,8 +1339,8 @@ function buildDatosBloques() {
         new Chart(document.getElementById('c-datos-fiscal-2'), {
             type: 'bar',
             data: { labels: years5, datasets: [
-                { label: 'Ingresos totales', data: years5.map(y => DATOS_V13.BASE[y].ingresos_totales_mmbs / 1000), backgroundColor: '#1D9E75', borderRadius: 3 },
-                { label: 'Egresos totales', data: years5.map(y => DATOS_V13.BASE[y].egresos_totales_mmbs / 1000), backgroundColor: '#D85A30', borderRadius: 3 },
+                { label: 'Ingresos totales', data: years5.map(y => DATOS_V14.BASE[y].ingresos_totales_mmbs / 1000), backgroundColor: '#1D9E75', borderRadius: 3 },
+                { label: 'Egresos totales', data: years5.map(y => DATOS_V14.BASE[y].egresos_totales_mmbs / 1000), backgroundColor: '#D85A30', borderRadius: 3 },
             ] },
             options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true, labels: { color: txtC(), font: { size: 10 } } }, tooltip: { callbacks: { label: c => c.dataset.label + ': Bs ' + c.raw.toFixed(1) + ' MM' } } },
                 scales: { x: { grid: { color: gridC() }, ticks: { color: txtC(), font: { size: 11 } } }, y: { grid: { color: gridC() }, ticks: { color: txtC(), font: { size: 10 } } } } }
@@ -1339,8 +1352,8 @@ function buildDatosBloques() {
         new Chart(document.getElementById('c-datos-externo-2'), {
             type: 'line',
             data: { labels: trims, datasets: [
-                { label: 'Exportaciones', data: trims.map(t => DATOS_V13.TRIMESTRAL[t].exportaciones / 1000), borderColor: '#1D9E75', tension: .25 },
-                { label: 'Importaciones', data: trims.map(t => DATOS_V13.TRIMESTRAL[t].importaciones / 1000), borderColor: '#D85A30', tension: .25 },
+                { label: 'Exportaciones', data: trims.map(t => DATOS_V14.TRIMESTRAL[t].exportaciones / 1000), borderColor: '#1D9E75', tension: .25 },
+                { label: 'Importaciones', data: trims.map(t => DATOS_V14.TRIMESTRAL[t].importaciones / 1000), borderColor: '#D85A30', tension: .25 },
             ] },
             options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true, labels: { color: txtC(), font: { size: 10 } } } },
                 scales: { x: { grid: { color: gridC() }, ticks: { color: txtC(), font: { size: 9 }, maxTicksLimit: 10 } }, y: { grid: { color: gridC() }, ticks: { color: txtC(), font: { size: 10 } } } } }
@@ -1351,8 +1364,8 @@ function buildDatosBloques() {
         new Chart(document.getElementById('c-datos-tot'), {
             type: 'line',
             data: { labels: years5, datasets: [
-                { label: 'Términos de intercambio (2010=100)', data: years5.map(y => DATOS_V13.BASE[y].tot_idx), borderColor: '#7A5FC7', backgroundColor: 'rgba(122,95,199,0.10)', fill: true, tension: .3, pointRadius: 5 },
-                { label: 'Precio gas (2010=100, referencia)', data: (() => { const b0 = DATOS_V13.BASE[2010].precio_gas_usdton; return years5.map(y => DATOS_V13.BASE[y].precio_gas_usdton / b0 * 100); })(), borderColor: '#EF9F27', borderDash: [5, 3], pointRadius: 4, tension: .3 },
+                { label: 'Términos de intercambio (2010=100)', data: years5.map(y => DATOS_V14.BASE[y].tot_idx), borderColor: '#7A5FC7', backgroundColor: 'rgba(122,95,199,0.10)', fill: true, tension: .3, pointRadius: 5 },
+                { label: 'Precio gas (2010=100, referencia)', data: (() => { const b0 = DATOS_V14.BASE[2010].precio_gas_usdton; return years5.map(y => DATOS_V14.BASE[y].precio_gas_usdton / b0 * 100); })(), borderColor: '#EF9F27', borderDash: [5, 3], pointRadius: 4, tension: .3 },
             ] },
             options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true, labels: { color: txtC(), font: { size: 10 } } } },
                 scales: { x: { grid: { color: gridC() }, ticks: { color: txtC(), font: { size: 11 } } }, y: { grid: { color: gridC() }, ticks: { color: txtC(), font: { size: 10 } } } } }
@@ -1362,7 +1375,7 @@ function buildDatosBloques() {
     if (document.getElementById('c-datos-remesas')) {
         new Chart(document.getElementById('c-datos-remesas'), {
             type: 'bar',
-            data: { labels: years5, datasets: [{ label: 'Remesas recibidas (MM $us)', data: years5.map(y => DATOS_V13.BASE[y].remesas_musd), backgroundColor: '#1D9E75', borderRadius: 4 }] },
+            data: { labels: years5, datasets: [{ label: 'Remesas recibidas (MM $us)', data: years5.map(y => DATOS_V14.BASE[y].remesas_musd), backgroundColor: '#1D9E75', borderRadius: 4 }] },
             options: { ...baseOpts(), plugins: { legend: { display: false } } }
         });
     }
@@ -1371,7 +1384,7 @@ function buildDatosBloques() {
     if (document.getElementById('c-datos-gas')) {
         new Chart(document.getElementById('c-datos-gas'), {
             type: 'line',
-            data: { labels: years5, datasets: [{ label: 'Precio gas (USD/ton)', data: years5.map(y => DATOS_V13.BASE[y].precio_gas_usdton), borderColor: '#EF9F27', backgroundColor: 'rgba(239,159,39,0.12)', fill: true, tension: .3, pointRadius: 5 }] },
+            data: { labels: years5, datasets: [{ label: 'Precio gas (USD/ton)', data: years5.map(y => DATOS_V14.BASE[y].precio_gas_usdton), borderColor: '#EF9F27', backgroundColor: 'rgba(239,159,39,0.12)', fill: true, tension: .3, pointRadius: 5 }] },
             options: { ...baseOpts(), plugins: { legend: { display: false } } }
         });
     }
@@ -1379,20 +1392,20 @@ function buildDatosBloques() {
     if (document.getElementById('c-datos-salario')) {
         new Chart(document.getElementById('c-datos-salario'), {
             type: 'bar',
-            data: { labels: years5, datasets: [{ label: 'Salario Mínimo (Bs)', data: years5.map(y => DATOS_V13.BASE[y].salario_minimo), backgroundColor: '#378ADD', borderRadius: 4 }] },
+            data: { labels: years5, datasets: [{ label: 'Salario Mínimo (Bs)', data: years5.map(y => DATOS_V14.BASE[y].salario_minimo), backgroundColor: '#378ADD', borderRadius: 4 }] },
             options: { ...baseOpts(), plugins: { legend: { display: false } } }
         });
     }
     // Contexto — commodities mensuales
     if (document.getElementById('c-datos-commod')) {
-        const meses = Object.keys(DATOS_V13.MENSUAL).sort();
+        const meses = Object.keys(DATOS_V14.MENSUAL).sort();
         new Chart(document.getElementById('c-datos-commod'), {
             type: 'line',
             data: { labels: meses, datasets: [
-                { label: 'Zinc (USD/ton)', data: meses.map(k => DATOS_V13.MENSUAL[k].commod_zinc), borderColor: '#1D9E75', pointRadius: 0, tension: .2, yAxisID: 'y' },
-                { label: 'Estaño (USD/ton)', data: meses.map(k => DATOS_V13.MENSUAL[k].commod_estano), borderColor: '#7A5FC7', pointRadius: 0, tension: .2, yAxisID: 'y1' },
-                { label: 'Plata (USD/oz)', data: meses.map(k => DATOS_V13.MENSUAL[k].commod_plata), borderColor: '#378ADD', pointRadius: 0, tension: .2, yAxisID: 'y' },
-                { label: 'Soya (USD/ton)', data: meses.map(k => DATOS_V13.MENSUAL[k].commod_soya), borderColor: '#EF9F27', pointRadius: 0, tension: .2, yAxisID: 'y' },
+                { label: 'Zinc (USD/ton)', data: meses.map(k => DATOS_V14.MENSUAL[k].commod_zinc), borderColor: '#1D9E75', pointRadius: 0, tension: .2, yAxisID: 'y' },
+                { label: 'Estaño (USD/ton)', data: meses.map(k => DATOS_V14.MENSUAL[k].commod_estano), borderColor: '#7A5FC7', pointRadius: 0, tension: .2, yAxisID: 'y1' },
+                { label: 'Plata (USD/oz)', data: meses.map(k => DATOS_V14.MENSUAL[k].commod_plata), borderColor: '#378ADD', pointRadius: 0, tension: .2, yAxisID: 'y' },
+                { label: 'Soya (USD/ton)', data: meses.map(k => DATOS_V14.MENSUAL[k].commod_soya), borderColor: '#EF9F27', pointRadius: 0, tension: .2, yAxisID: 'y' },
             ] },
             options: { responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false },
                 plugins: { legend: { display: true, labels: { color: txtC(), font: { size: 9 } } } },
