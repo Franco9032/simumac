@@ -1,4 +1,5 @@
 # SimuMac — Simulador Macroeconómico de Bolivia (2010–2014)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.21634183.svg)](https://doi.org/10.5281/zenodo.21634183)
 
 [![Licencia MIT](https://img.shields.io/badge/Licencia-MIT-blue.svg)](LICENSE)
 [![Versión](https://img.shields.io/badge/Versión-13.0.0-brightgreen)](https://github.com/tu-usuario/simumac/releases)
