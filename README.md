@@ -78,7 +78,6 @@ simumac/
 ├── datos_v14.js                                    # Base de datos en formato JSON (extraída del Excel)
 ├── estilitosA.css                                  # Estilos (claro/oscuro, responsive)
 ├── manual.md                                       # Manual de uso completo (se carga desde el botón flotante)
-├── SimuMac_Articulo_Cientifico.md                  # Artículo científico que documenta el proyecto
 ├── SimuMon_Bloques_1-7_Consolidado (FINAL).xlsx    # Archivo Excel con las 54 fuentes primarias
 ├── simumac_icon.svg                                # Favicon
 └── simumac_logo.svg                                # Logo de la herramienta
