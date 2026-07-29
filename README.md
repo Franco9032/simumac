@@ -73,13 +73,12 @@ Visita la versión publicada en: simumac.netlify.app
 
 ```
 simumac/
-├── simuladorv14.html                              # Página principal (interfaz completa)
+├── index.html                                      # Página principal (interfaz completa)
 ├── scriptv14.js                                    # Motor de cálculo y lógica de la interfaz
 ├── datos_v14.js                                    # Base de datos en formato JSON (extraída del Excel)
 ├── estilitosA.css                                  # Estilos (claro/oscuro, responsive)
 ├── manual.md                                       # Manual de uso completo (se carga desde el botón flotante)
 ├── SimuMac_Articulo_Cientifico.md                  # Artículo científico que documenta el proyecto
-├── Tesis_COMPLETA_CORREGIDA.md                      # Documento de tesis de grado completo
 ├── SimuMon_Bloques_1-7_Consolidado (FINAL).xlsx    # Archivo Excel con las 54 fuentes primarias
 ├── simumac_icon.svg                                # Favicon
 └── simumac_logo.svg                                # Logo de la herramienta
@@ -97,7 +96,6 @@ simumac/
 ### Documentación y recursos
 * Manual de usuario: `manual.md` – Explicación detallada de cada sección y canal.
 * Artículo científico: `SimuMac_Articulo_Cientifico.md` – Metodología, marco teórico y hallazgos.
-* Tesis de grado: `Tesis_COMPLETA_CORREGIDA.md` – Documento académico completo.
 * Base de datos maestra: `SimuMon_Bloques_1-7_Consolidado (FINAL).xlsx` – 54 fuentes primarias organizadas en 7 bloques.
 * Notas metodológicas: en la hoja `00_Notas` del Excel se documentan todas las decisiones de limpieza y conversión; en la pestaña **Metodología** del simulador se documenta cada coeficiente del motor con su tipo (OBSERVADO/CALIBRADO/SUPUESTO), cálculo y limitaciones.
 
