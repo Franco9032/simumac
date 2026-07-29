@@ -1,5 +1,6 @@
 # Manual de Uso — SimuMac
 ### Simulador Macroeconómico de Bolivia, 2010–2014
+### Versión 14.12.3
 ### Creado por Franz Nicol Vargas Crespo, 2026
 
 ---
@@ -108,8 +109,8 @@ Debajo de los controles generales hay cuatro botones — uno por canal de transm
 **Un matiz importante:** la eficacia de este canal no es igual todos los años. Bolivia redujo de forma sostenida la proporción de depósitos en dólares durante este período (un proceso conocido como "bolivianización"), y eso hace que el mismo movimiento monetario tenga más efecto hacia 2014 que hacia 2010. Un menú permite comparar este comportamiento realista contra un supuesto más simple de eficacia constante, para ver cuánto cambia la conclusión según ese supuesto.
 
 **Dos formas de usar este canal**, mediante el interruptor "Monetario → Macro" / "Macro → Monetario":
-- *Monetario → Macro* (la vista habitual): mueves los agregados y ves el efecto sobre el PIB, la inflación, etc.
-- *Macro → Monetario* (la pregunta inversa): fijas una meta macroeconómica (por ejemplo, "quiero 8% de crecimiento") y la herramienta estima qué tan grandes tendrían que ser los agregados monetarios para sostenerla.
+- *Monetario → Macro* (la vista habitual): mueves los agregados y ves el efecto sobre el PIB, la inflación, etc. Este es el motor principal de la herramienta, con cada coeficiente documentado en Metodología.
+- *Macro → Monetario* (la pregunta inversa): fijas una meta macroeconómica (por ejemplo, "quiero 8% de crecimiento") y la herramienta estima qué tan grandes tendrían que ser los agregados monetarios para sostenerla. **Nota importante**: a diferencia del motor principal, esta dirección inversa usa una aproximación ilustrativa con pesos fijos por variable, no un canal simétrico ni calibrado con la misma evidencia que Monetario → Macro. Sirve para tener una intuición de orden de magnitud, no para leer sus resultados con el mismo nivel de confianza que el resto del Simulador.
 
 **Políticas monetarias ya preparadas**, con su tabla explicativa (qué instrumento del Banco Central representa cada una, y qué canal activa): Expansiva, Contractiva, Compra de valores en el mercado (OMA Compra), Venta de valores (OMA Venta), Aumento del encaje legal, y Profundización de la bolivianización.
 
@@ -192,6 +193,7 @@ Una tabla con las 54 fuentes primarias usadas en todo el proyecto, cada una con 
 - El multiplicador fiscal se calcula sobre solo cuatro transiciones anuales — es una aproximación, no una estimación econométrica con las garantías estadísticas de una muestra grande.
 - La restricción externa nunca fue puesta a prueba por la historia real de este período — su comportamiento ante escenarios extremos es una extrapolación razonable de la teoría, no una validación empírica.
 - El marco de tipo de cambio fijo (Mundell-Fleming) que sustenta buena parte de la herramienta corresponde al régimen cambiario vigente en Bolivia entre 2010 y 2014; no debe extrapolarse sin ajustes al régimen cambiario flexible vigente desde 2026.
+- La dirección "Macro → Monetario" del Canal Monetario (sección 4.2) usa pesos fijos declarados como aproximación ilustrativa, no calibrados con la misma evidencia que el resto de la herramienta — trátese como una intuición de orden de magnitud, no como un resultado con el mismo respaldo que el motor principal (Monetario → Macro).
 
 ---
 
