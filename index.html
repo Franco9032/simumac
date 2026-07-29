@@ -42,6 +42,7 @@
   padding: 7px 18px;
   cursor: pointer;
   -webkit-appearance: none;
+  appearance: none;
   flex: 1;
   max-width: 280px;
 }
@@ -92,7 +93,7 @@
 <body>
 
 <nav>
-  <div class="nav-brand"><img src="simumac_icon.svg" alt="SimuMac" style="height:24px;width:24px;vertical-align:middle;margin-right:6px;">SimuMac</div>
+  <div class="nav-brand"><img src="simumac_icon.svg" alt="SimuMac" style="height:24px;width:24px;vertical-align:middle;margin-right:6px;">SimuMac<span style="font-size:10px;font-weight:400;color:var(--text3);margin-left:6px;vertical-align:middle;">v14.12.3</span></div>
   <div class="nav-links" id="navLinks">
     <a href="#" class="active" onclick="showPage('pg-panorama',this)"><span>Panorama</span></a>
     <a href="#" onclick="showPage('pg-datos',this)"><span>Datos</span></a>
@@ -243,8 +244,8 @@
 
       <div class="analysis-card">
         <h3>Inflación — cinco años y el choque de oferta de 2013</h3>
-        <p>La inflación general acumulada a diciembre fue 7.18% (2010), 6.90% (2011), 4.54% (2012), 6.48% (2013) y 5.19% (2014). El año más inusual es 2011: la inflación núcleo (8.79%) superó a la general (6.90%), lo opuesto al patrón habitual — sugiere presión de demanda generalizada ese año, no un choque puntual. En 2012 las tres medidas convergen (4.54/4.84/3.52%), el año más "tranquilo" del período.</p>
-        <p>2013 es el caso ya documentado: general 6.48% vs. núcleo 4.10%, brecha de 2.38 pp explicada por el choque de papa, tomate y pollo (BCB Memoria 2013: 76% de la inflación de agosto y 80% de septiembre). 2014 vuelve a converger (5.19/4.34/3.92%), sin señales de choques de oferta comparables al año anterior.</p>
+        <p>La inflación general acumulada a diciembre fue 7.18% (2010), 6.90% (2011), 4.54% (2012), 6.48% (2013) y 5.19% (2014). El año más inusual es 2011: la inflación núcleo (8.79%) superó a la general (6.90%), lo opuesto al patrón habitual lo que  sugiere presión de demanda generalizada ese año, no un choque puntual. En 2012 las tres medidas convergen (4.54% general, 4.84% núcleo, 3.52% subyacente), el año más "tranquilo" del período.</p>
+        <p>2013 vuelve a mostrarse como el año atípico ya documentado: la inflación general (6.48%) superó a la núcleo —que excluye alimentos frescos y otros ítems volátiles, y por eso aproxima mejor la tendencia de fondo— por 2.38 puntos porcentuales (6.48% vs. 4.10%). Una brecha tan amplia entre ambas medidas es la firma típica de un choque de oferta concentrado en pocos productos, y el propio BCB lo confirma en su Memoria 2013: la papa, el tomate y el pollo explicaron el 76% de la inflación de agosto y el 80% de la de septiembre de ese año. En 2014 las tres medidas vuelven a moverse juntas (general 5.19%, núcleo 4.34%, subyacente 3.92%, todas dentro de 1.3 pp entre sí), señal de que ese año no hubo un choque de oferta comparable al de 2013.</p>
       </div>
 
       <div class="analysis-card">
@@ -278,17 +279,35 @@
       </div>
 
       <div class="sub-title" style="margin-top:1rem;">Hitos documentados — con fuente</div>
-
+      
       <div class="analysis-card">
-        <h3>Diciembre 2010 — el "gasolinazo"</h3>
+        <h3>Diciembre 2010 — el "gasolinazo" <span style="font-weight:400;color:var(--text2);">(Bloque 2 · Fiscal — reversión de una medida de ajuste al subsidio a los combustibles)</span></h3>
         <p>El 26 de diciembre de 2010 el gobierno (García Linera, presidente en ejercicio) subió el precio de la gasolina y el diésel casi 100% vía Decreto Supremo 748, buscando reducir el subsidio fiscal y el contrabando de combustible. Protestas masivas en La Paz, El Alto y otras ciudades obligaron a abrogarlo apenas 5 días después (D.S. 759, 31 dic 2010).</p>
         <p style="font-size:12px;"><a href="https://es.wikipedia.org/wiki/Nivelaci%C3%B3n_en_el_precio_de_los_carburantes_en_Bolivia" target="_blank" rel="noopener" style="color:var(--accent);">Wikipedia — Nivelación en el precio de los carburantes en Bolivia</a> · <a href="https://eju.tv/2010/12/gasolinazo-regalo-de-evo-desat-caos-e-indignacin/" target="_blank" rel="noopener" style="color:var(--accent);">eju.tv, dic. 2010</a></p>
       </div>
 
       <div class="analysis-card">
-        <h3>Agosto-septiembre 2013 — el choque de alimentos, según el propio BCB</h3>
+        <h3>Agosto-octubre 2011 — la marcha del TIPNIS frena la carretera Villa Tunari-San Ignacio de Moxos <span style="font-weight:400;color:var(--text2);">(Bloque 2 · Fiscal — contraejemplo: inversión pública grande, contratada y financiada, que se congela por conflicto social)</span></h3>
+        <p>El 15 de agosto de 2011 partió desde Trinidad (Beni) la VIII marcha indígena de tierras bajas, en rechazo a una carretera de unos 300 km entre Villa Tunari y San Ignacio de Moxos que atravesaría el TIPNIS, financiada con crédito brasileño (BNDES) por cerca de $us 420 millones. La represión policial en Chaparina (24-25 de septiembre) no logró frenar la marcha, que llegó a La Paz el 19 de octubre; el gobierno cedió y el Congreso aprobó poco después la Ley 180, que prohíbe la carretera por el parque. Es el contraejemplo de la serie de inversión pública que en el bloque fiscal crece sin pausa todo el período: aquí un proyecto grande y ya financiado se detiene por conflicto social, un riesgo que la cifra agregada de inversión no captura.</p>
+        <p style="font-size:12px;"><a href="https://es.wikipedia.org/wiki/Protestas_por_el_TIPNIS_en_Bolivia_de_2011" target="_blank" rel="noopener" style="color:var(--accent);">Wikipedia — Protestas por el TIPNIS en Bolivia de 2011</a> · <a href="https://boliviaverifica.bo/carretera-por-el-tipnis-lo-que-hay-que-saber-del-conflicto-que-lleva-decadas/" target="_blank" rel="noopener" style="color:var(--accent);">Bolivia Verifica</a></p>
+      </div>
+
+      <div class="analysis-card">
+        <h3>1 de mayo de 2012 — nacionalización de la Transportadora de Electricidad (TDE) <span style="font-weight:400;color:var(--text2);">(Bloque 4 · Externo — salida de inversión extranjera directa, visible en la cuenta de capital de la balanza de pagos)</span></h3>
+        <p>Mediante Decreto Supremo 1214, el gobierno nacionalizó la Transportadora de Electricidad (TDE), filial de la española Red Eléctrica Internacional que controlaba el 73% de las líneas de transmisión del Sistema Troncal Interconectado. La medida, parte de una ola de nacionalizaciones en electricidad e hidrocarburos, redujo el stock de inversión extranjera directa en Bolivia y abrió una disputa de compensación con España que se resolvió recién en 2015 (D.S. 2340). Es un caso de manual para el bloque externo: un evento que no se ve en exportaciones ni en tipo de cambio, pero sí golpea directamente la cuenta de capital y financiera de la balanza de pagos.</p>
+        <p style="font-size:12px;"><a href="https://www.lexivox.org/norms/BO-DS-N1214.html" target="_blank" rel="noopener" style="color:var(--accent);">Lexivox — Decreto Supremo N° 1214</a> · <a href="https://www.realinstitutoelcano.org/analisis/la-nacionalizacion-de-tde-analisis-desde-el-derecho-internacional-ari/" target="_blank" rel="noopener" style="color:var(--accent);">Real Instituto Elcano — análisis jurídico</a></p>
+      </div>
+
+      <div class="analysis-card">
+        <h3>Agosto-septiembre 2013 — el choque de alimentos, según el propio BCB <span style="font-weight:400;color:var(--text2);">(Bloque 5 · Precios — fuente primaria del choque de oferta ya analizado arriba, contrastado con el ONI)</span></h3>
         <p>La Memoria 2013 del Banco Central documenta una ola de frío en agosto y una de las sequías más fuertes de los últimos años en el sureste del país, que destruyeron cultivos de papa y tomate y explicaron más del 75% de la inflación de esos dos meses — la fuente primaria del hallazgo que ya verificamos con el ONI.</p>
         <p style="font-size:12px;"><a href="https://www.bcb.gob.bo/webdocs/publicacionesbcb/gestion2013_capitulo2.pdf" target="_blank" rel="noopener" style="color:var(--accent);">BCB — Memoria 2013, Capítulo 2 (PDF oficial)</a></p>
+      </div>
+
+      <div class="analysis-card">
+        <h3>Segunda mitad de 2014 — colapso del precio internacional del petróleo <span style="font-weight:400;color:var(--text2);">(Bloque 4 y 2 · Externo y Fiscal — explica el origen externo del "año de quiebre" documentado arriba)</span></h3>
+        <p>Desde mediados de 2014 el precio internacional del petróleo cayó de unos $us 105 a cerca de $us 50 por barril hacia fin de año. Como los contratos de exportación de gas de Bolivia a Brasil y Argentina están indexados a una canasta de fuel oil con rezago de varios meses, el golpe sobre el precio de exportación del gas —que según la Hoja de Datos ya venía bajando desde el pico de 2012— se intensificó, afectando directamente los ingresos por IDH, regalías y divisas de exportación. Es la pieza externa que completa el relato de "2014 — el año de quiebre" de esta misma sección: el gasto público no solo se aceleró, el ingreso externo empezó a caer el mismo año.</p>
+        <p style="font-size:12px;"><a href="https://www.imf.org/es/Blogs/Articles/2015/02/26/4984" target="_blank" rel="noopener" style="color:var(--accent);">FMI — Impacto fiscal de la caída de los precios del petróleo en América Latina y el Caribe</a></p>
       </div>
 
   </div>
@@ -954,7 +973,7 @@
       <div class="section-title">Coeficientes del motor — etiquetados</div>
       <p style="font-size:13px;color:var(--text2);margin:-8px 0 14px;">
         <span style="color:var(--teal);font-weight:600;">OBSERVADO</span> = dato de fuente primaria, sin transformar &nbsp;·&nbsp;
-        <span style="color:var(--amber);font-weight:600;">CALIBRADO</span> = derivado de los datos con método declarado, no estimación econométrica &nbsp;·&nbsp;
+        <span style="color:var(--amber);font-weight:600;">CALIBRADO</span> = derivado de los datos con método declarado, no estimación econométrica — en la mayoría de los casos es la razón entre una sola transición anual (2012→2013), no una elasticidad estructural con controles ni significancia estadística; ver nota en cada fila &nbsp;·&nbsp;
         <span style="color:var(--red);font-weight:600;">SUPUESTO</span> = decisión de especificación, declarada y con alternativa comparable en la propia herramienta.
       </p>
       <table class="coef-table">
@@ -962,13 +981,18 @@
         <tbody>
           <tr><td>k multiplicador fiscal (real/real)</td><td>A</td><td class="coef-ok">2.14–4.02</td><td><span style="color:var(--amber);font-weight:600;">CALIBRADO</span></td><td>ΔPIB real/ΔInv real (Bs 1990, deflactor FBKF-INE) · rango por transición, desplegable en Canal A. <strong>Comparación con literatura:</strong> Ilzetzki, Mendoza &amp; Végh (2013, <em>Journal of Monetary Economics</em>) reportan, para economías con TC fijo (nuestro caso), un multiplicador de 0,15 de impacto que sube a 1,4 en el largo plazo — nuestro rango queda por encima incluso de ese máximo de largo plazo. Puede reflejar particularidades bolivianas (economía relativamente cerrada, capacidad ociosa), pero con n=4 no se puede distinguir eso de fragilidad muestral — se declara la comparación para que el lector lo evalúe.</td></tr>
           <tr><td>θ eficacia del canal doméstico</td><td>B</td><td class="coef-ok">dinámico</td><td><span style="color:var(--red);font-weight:600;">SUPUESTO</span></td><td>θ=0.25·(dolarización 2012/dolarización año base) · escala con sustitución de monedas, NO con apertura de la cuenta de capital (serían dos mecanismos distintos de la literatura) · alternativa fija disponible en Canal B</td></tr>
-          <tr><td>h sensibilidad LM</td><td>B</td><td class="coef-ok">6.39</td><td><span style="color:var(--amber);font-weight:600;">CALIBRADO</span></td><td>ΔM2/Δr=17.75%/2.78pp · BCB tasas 2012→2013</td></tr>
-          <tr><td>β crédito BCB→M3</td><td>C</td><td class="coef-ok">0.688 cond.</td><td><span style="color:var(--teal);font-weight:600;">OBSERVADO</span> + <span style="color:var(--red);font-weight:600;">SUPUESTO</span></td><td>ΔM3/ΔInv=20.99%/30.50% (BCB/VIPFE) · activación condicional al signo del CIN es supuesto de especificación</td></tr>
+          <tr><td>h sensibilidad LM</td><td>B</td><td class="coef-ok">6.39</td><td><span style="color:var(--amber);font-weight:600;">CALIBRADO</span></td><td>ΔM2/Δr=17.75%/2.78pp · BCB tasas 2012→2013 · razón de una sola transición anual, no una elasticidad estructural estimada con controles</td></tr>
+          <tr><td>β crédito BCB→M3</td><td>C</td><td class="coef-ok">0.688 cond.</td><td><span style="color:var(--teal);font-weight:600;">OBSERVADO</span> + <span style="color:var(--red);font-weight:600;">SUPUESTO</span></td><td>ΔM3/ΔInv=20.99%/30.50% (BCB/VIPFE), 2012→2013 · razón de una sola transición anual, no una elasticidad estructural · activación condicional al signo del CIN es supuesto de especificación aparte</td></tr>
           <tr><td>Activación Canal C</td><td>C</td><td class="coef-ok">CIN &gt; 0</td><td><span style="color:var(--teal);font-weight:600;">OBSERVADO</span></td><td>Identidad contable — CIN fiscal, Cuadro 3.1.1 UDAPE/MEFP</td></tr>
           <tr><td>ΔV velocidad circulación</td><td>—</td><td class="coef-ok">dinámico</td><td><span style="color:var(--teal);font-weight:600;">OBSERVADO</span></td><td>V=PIB nominal/M4′ · se recalcula con cada simulación (antes era una constante fija de -4.47%, corregido en v10)</td></tr>
-          <tr><td>Okun ε</td><td>—</td><td class="coef-ok">−0.30</td><td><span style="color:var(--amber);font-weight:600;">CALIBRADO</span></td><td>u y π subieron juntos → choque oferta → se usa Okun, no Phillips</td></tr>
-          <tr><td>ε pobreza-PIB</td><td>—</td><td class="coef-ok">−0.647</td><td><span style="color:var(--amber);font-weight:600;">CALIBRADO</span></td><td>Δpob/ΔPIB=−4.4pp/6.80pp · INE 3.06.01.01</td></tr>
+          <tr><td>Okun ε</td><td>—</td><td class="coef-ok">−0.30</td><td><span style="color:var(--amber);font-weight:600;">CALIBRADO</span></td><td>u y π subieron juntos → choque oferta → se usa Okun, no Phillips · razón de una sola transición anual (2012→2013), no una elasticidad estructural estimada con controles</td></tr>
+          <tr><td>ε pobreza-PIB</td><td>—</td><td class="coef-ok">−0.647</td><td><span style="color:var(--amber);font-weight:600;">CALIBRADO</span></td><td>Δpob/ΔPIB=−4.4pp/6.80pp · INE 3.06.01.01, 2012→2013 · razón de una sola transición anual, no una elasticidad estructural estimada con controles</td></tr>
           <tr><td>φ restricción externa</td><td>Externo</td><td class="coef-ok">rampa continua</td><td><span style="color:var(--red);font-weight:600;">SUPUESTO</span></td><td>φ=clamp((6−RIN_meses)/6·0.5,0,0.5) · umbral de 6 meses es convención estándar de adecuación de reservas</td></tr>
+          <tr><td>Techo de capacidad productiva</td><td>A+C</td><td class="coef-ok">1.08</td><td><span style="color:var(--red);font-weight:600;">SUPUESTO</span></td><td>Penaliza dY_fiscal/dY_credito si el PIB simulado supera 108% del base · pendiente de penalización (2.5) y piso (0.1) también declarados, no calibrados contra datos de brecha de producto</td></tr>
+          <tr><td>Factor de escala Canal B (dY_monetario)</td><td>B</td><td class="coef-ok">0.06</td><td><span style="color:var(--red);font-weight:600;">SUPUESTO</span></td><td>Ajusta la magnitud de dY_monetario a un rango plausible frente a A y C · declarado, no calibrado contra ningún dato</td></tr>
+          <tr><td>Pass-through inflación de demanda</td><td>Síntesis</td><td class="coef-ok">0.35</td><td><span style="color:var(--red);font-weight:600;">SUPUESTO</span></td><td>Traspaso de exceso monetario (dM_pond−dY_total) a inflación de demanda · declarado, no calibrado, a diferencia de k_fiscal/h_lm/beta_cred</td></tr>
+          <tr><td>Sensibilidad presión cambiaria a M4′</td><td>Externo</td><td class="coef-ok">15</td><td><span style="color:var(--red);font-weight:600;">SUPUESTO</span></td><td>Convierte la expansión de M4′ en puntos del índice de presión cambiaria (0-100) · declarado, no calibrado</td></tr>
+          <tr><td>Peso alimentos·demanda (alerta)</td><td>Síntesis</td><td class="coef-ok">1.3</td><td><span style="color:var(--red);font-weight:600;">SUPUESTO</span></td><td>Sensibilidad supuesta de la inflación de alimentos al componente de demanda, en la alerta de alimentos · declarado, no calibrado</td></tr>
         </tbody>
       </table>
     </div>
