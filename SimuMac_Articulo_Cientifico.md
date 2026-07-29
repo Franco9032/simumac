@@ -194,8 +194,6 @@ Wijnholds, J. O. de B., & Kapteyn, A. (2001). *Reserve adequacy in emerging mark
 
 Este anexo presenta las ecuaciones centrales del motor de cálculo de SimuMac, en notación de texto. El conjunto completo de ecuaciones (canal monetario, inflación, Ley de Okun, capacidad productiva y el parámetro θ) está disponible con el mismo nivel de detalle en el repositorio de acceso abierto en Zenodo (Vargas Crespo, 2026a).
 
-> ⚠️ **Nota para la versión Word:** en el archivo `.docx` que acompaña a este `.md`, estas ecuaciones deben insertarse con el editor de ecuaciones de Word/OnlyOffice antes del envío final, conforme a la norma de la revista. Aquí se dejan en notación de texto solo como referencia de contenido para el repositorio.
-
 - **Canal fiscal:** ΔY_fiscal = k · (ΔI_pública real / Y_base) · 100, donde ΔI_pública real = I_pública real, base · (factor − 1); factor ∈ [0,40, 1,60]; k = multiplicador fiscal calibrado (2,14–4,02; por defecto k = 2,66, mediana del período).
 - **Canal de crédito (activación suave):** ψ(CIN) = 1 / (1 + e^(−4·CIN/2000)), donde 2000 es el ancho de transición en millones de bolivianos (supuesto de especificación). Efecto sobre el PIB: ΔY_crédito = k · β · ΔG · 100, donde ΔG = [ψ(CIN_sim)·CIN_sim − ψ(CIN_hist)·CIN_hist] / M3_base.
 - **Restricción externa:** φ = max(0, min(0,5, 0,5 · (U − RIN_meses)/U)), donde U es el umbral (6 o 12 meses). Multiplicadores ajustados: k_adj = k·(1 − φ); β_adj = β·(1 − φ).
