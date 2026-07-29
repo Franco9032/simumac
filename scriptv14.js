@@ -1,5 +1,5 @@
 /* ══════════════════════════════════════════════════════════════════════
-   BOLIVIA MACRO SIMULATOR
+   SimuMac — SIMULADOR MACROECONÓMICO DE BOLIVIA — versión actual: 14.12.3
    ══════════════════════════════════════════════════════════════════════ */
 
 /* ══ NAV ══ */
@@ -168,7 +168,12 @@ let COEF = {
 
     /* Sensibilidad demanda de dinero a la tasa (pendiente LM)
        h=6.39: ΔM2/Δr = 17.75% / 2.78pp (tasa 2012: 9.00% → 2013: 6.22%)
-       Fuente: BCB tasas activas 30ACS2012.pdf / 30ACM2013.pdf */
+       Fuente: BCB tasas activas 30ACS2012.pdf / 30ACM2013.pdf
+       NOTA METODOLÓGICA: razón entre una sola transición anual (2012→2013),
+       no una elasticidad estructural estimada con controles ni significancia
+       estadística — mismo límite que k_fiscal (ver nota ahí). No hay forma
+       de mejorar esto con solo 5 años de datos; se declara explícitamente
+       en vez de presentarlo como una estimación econométrica. */
     h_lm: 6.39,
 
     /* Pendiente IS (sensibilidad inversión a la tasa)
@@ -181,7 +186,13 @@ let COEF = {
        Fuente: BCB Sector Monetario dic-2012→dic-2013 / VIPFE Cuadro III.10
        CORRECCIÓN v7: el canal ahora es CONDICIONAL — solo transmite si el CIN
        fiscal del año base es positivo (necesidad de financiamiento monetizada).
-       2010-2013: CIN negativo (superávit) → canal inactivo. 2014: CIN positivo → activo. */
+       2010-2013: CIN negativo (superávit) → canal inactivo. 2014: CIN positivo → activo.
+       NOTA METODOLÓGICA: al igual que k_fiscal y h_lm, es la razón de una
+       sola transición anual (2012→2013), no una elasticidad estructural
+       estimada con controles ni significancia estadística. La condicionalidad
+       por signo del CIN sí es una decisión de especificación declarada (ver
+       tabla de Metodología en la UI), pero el valor 0.688 en sí mismo hereda
+       la misma limitación muestral que el resto de coeficientes CALIBRADO. */
     beta_cred: 0.688,
 
     /* Caída de velocidad de circulación del dinero 2012→2013
@@ -190,16 +201,26 @@ let COEF = {
     delta_v: -4.47,
 
     /* Techo de capacidad productiva (penaliza si PIB simulado > 108% del base)
-       Refleja restricciones de oferta en economía boliviana con alta informalidad */
+       Refleja restricciones de oferta en economía boliviana con alta informalidad
+       SUPUESTO DE ESPECIFICACIÓN: el umbral 1.08 no está calibrado contra
+       ningún dato de brecha de producto o capacidad instalada — es un valor
+       de diseño declarado, no estimado. Ídem el factor 2.5 de la pendiente
+       de penalización y el piso 0.1, ver computeEffects(). */
     max_capacity: 1.08,
 
     /* Elasticidad pobreza-PIB: Δpob/ΔPIB = −4.4pp / 6.80pp
-       Fuente: INE Cuadro 3.06.01.01 (FGT0) · 2012→2013 */
+       Fuente: INE Cuadro 3.06.01.01 (FGT0) · 2012→2013
+       NOTA METODOLÓGICA: razón entre una sola transición anual (2012→2013),
+       no una elasticidad estructural estimada con controles ni significancia
+       estadística — mismo límite que k_fiscal/h_lm/beta_cred. */
     eps_pob: -0.647,
 
     /* Coeficiente Okun: Δu / ΔPIB
        ε=−0.30: u y π subieron juntos → estanflación de oferta → se usa Okun no Phillips
-       Fuente: INE Cuadro 3.04.01.01 · PEA/PD 2012→2013 */
+       Fuente: INE Cuadro 3.04.01.01 · PEA/PD 2012→2013
+       NOTA METODOLÓGICA: razón entre una sola transición anual (2012→2013),
+       no una elasticidad estructural estimada con controles ni significancia
+       estadística — mismo límite que k_fiscal/h_lm/beta_cred/eps_pob. */
     eps_okun: -0.30
 };
 
@@ -706,6 +727,8 @@ function computeEffects() {
     const pib_simulado  = b.pib + dY_AC;
     const capacidad_usada = pib_simulado / (b.pib * COEF.max_capacity);
     if (capacidad_usada > 0.95) {
+        /* SUPUESTO DE ESPECIFICACIÓN: pendiente 2.5 y piso 0.1 son valores de
+           diseño declarados, no calibrados contra datos de brecha de producto. */
         const penalidad = Math.max(0.1, 1 - (capacidad_usada - 0.95) * 2.5);
         dY_fiscal   *= penalidad;
         dY_credito  *= penalidad;
@@ -730,6 +753,10 @@ function computeEffects() {
        y C sí usan k_adj — inconsistente, dado que la restricción externa
        debería atenuar la demanda agregada sin importar por qué canal llega.
        Ahora los 3 canales usan k_adj de forma consistente. */
+    /* SUPUESTO DE ESPECIFICACIÓN: 0.06 es un factor de escala del canal LM
+       sin calibración propia — declarado, no calibrado. Ajusta la magnitud
+       de dY_monetario a un rango plausible frente a los canales A y C, pero
+       no proviene de ningún dato ni estimación. */
     const dY_monetario = theta_din * k_adj * delta_I_priv * 0.06;
 
     /* ── dY_TOTAL = CANAL A + CANAL C + CANAL B (v8: los 3 con palanca propia) */
@@ -739,6 +766,10 @@ function computeEffects() {
 
     /* ── INFLACIÓN ─────────────────────────────────────────────────── */
     const dM_pond = 0.20 * dM1 + 0.30 * dM2 + 0.30 * dM3 + 0.20 * dM4p;
+    /* SUPUESTO DE ESPECIFICACIÓN: 0.35 es un factor de traspaso (pass-through)
+       de exceso monetario a inflación de demanda, declarado, no calibrado —
+       no hay una regresión ni razón interanual que lo respalde, a diferencia
+       de k_fiscal/h_lm/beta_cred. */
     let delta_inf_dem = (dM_pond * 100 - dY_total) * 0.35;
     let delta_inf_ofe = 0;
     if (capacidad_usada_final > 0.95) {
@@ -775,12 +806,19 @@ function computeEffects() {
        70  = RIN 3-6 meses (precaución, φ=0.15)
        100 = RIN ≥ 6 meses (zona segura, φ=0)
        Adicionalmente incorpora presión por expansión de M4' */
+    /* SUPUESTO DE ESPECIFICACIÓN: 15 es un factor de escala declarado, no
+       calibrado, para convertir la expansión de M4' en puntos de presión
+       cambiaria dentro del índice 0-100. */
     const presion_M4 = Math.max(0, dM4p * 15);  /* expansión M4' presiona TC */
+    /* CORRECCIÓN v12: cortes antes fijos en 1/3/6, desincronizados de
+       UMBRAL_PHI (ver misma corrección en updateAlertas). Con UMBRAL_PHI=6
+       por defecto, umCorte1/2/3 = 1/3/6 — sin cambio de comportamiento. */
+    const umCorte1 = UMBRAL_PHI / 6, umCorte2 = UMBRAL_PHI / 2, umCorte3 = UMBRAL_PHI;
     let   idx_cam;
-    if      (rin_meses < 1)  idx_cam = Math.max(0,  10 - presion_M4);
-    else if (rin_meses < 3)  idx_cam = Math.max(0,  45 - presion_M4);
-    else if (rin_meses < 6)  idx_cam = Math.max(20, 70 - presion_M4);
-    else                     idx_cam = Math.max(50, 100 - presion_M4);
+    if      (rin_meses < umCorte1)  idx_cam = Math.max(0,  10 - presion_M4);
+    else if (rin_meses < umCorte2)  idx_cam = Math.max(0,  45 - presion_M4);
+    else if (rin_meses < umCorte3)  idx_cam = Math.max(20, 70 - presion_M4);
+    else                            idx_cam = Math.max(50, 100 - presion_M4);
     const newCam = +idx_cam.toFixed(1);
 
     const newInvP = +(100 + delta_I_priv * 0.3).toFixed(1);
@@ -852,10 +890,10 @@ function computeEffects() {
     setEff('eff-des',  'eff-des-d',  newDes,  b.des,  '%', false);
     setEff('eff-pob',  'eff-pob-d',  newPob,  b.pob,  '%', false);
     setEff('eff-inv',  'eff-inv-d',  newInvP, 100,    '',  true);
-    setEff('eff-cam',  'eff-cam-d',  newCam,  (rin_meses >= 6 ? 100 : rin_meses >= 3 ? 70 : rin_meses >= 1 ? 45 : 10), '', false);
+    setEff('eff-cam',  'eff-cam-d',  newCam,  (rin_meses >= umCorte3 ? 100 : rin_meses >= umCorte2 ? 70 : rin_meses >= umCorte1 ? 45 : 10), '', false);
 
     /* ── PANEL DE ALERTAS SEMÁFORO ────────────────────────────────────── */
-    updateAlertas(b, newInf, rin_meses, delta_inf_dem, dY_total, cinSim, pibNomBaseParaV);
+    updateAlertas(b, newInf, rin_meses, delta_inf_dem, dY_total, cinSim, pibNomBaseParaV, delta_inf_ofe);
 }
 
 /* ══════════════════════════════════════════════════════════════════════
@@ -864,16 +902,24 @@ function computeEffects() {
    Las alertas ⚠️ NARANJA y 🔴 ROJO también modifican el motor implícitamente
    vía φ_t (RIN) y θ_MF (dolarización) que ya están en computeEffects.
    ══════════════════════════════════════════════════════════════════════ */
-function updateAlertas(b, newInf, rin_meses, delta_inf_dem, dY_total, cinSim, pibNomBase) {
+function updateAlertas(b, newInf, rin_meses, delta_inf_dem, dY_total, cinSim, pibNomBase, delta_inf_ofe) {
+    /* CORRECCIÓN v12: los cortes de RIN (1/3/6 meses) estaban fijos y
+       desincronizados de UMBRAL_PHI — si el usuario cambiaba el umbral de φ
+       en la UI (ej. a 12 meses), esta alerta y el índice de presión cambiaria
+       (idx_cam, más abajo en computeEffects) seguían evaluando contra 1/3/6.
+       Ahora ambos escalan proporcionalmente a UMBRAL_PHI (con UMBRAL_PHI=6,
+       los cortes son exactamente 1/3/6, igual que antes — sin cambio de
+       comportamiento por defecto). */
+    const rinCorte1 = UMBRAL_PHI / 6, rinCorte2 = UMBRAL_PHI / 2, rinCorte3 = UMBRAL_PHI;
     /* 1. RIN CRÍTICA — Canal Externa (φ) */
     setAlerta('alerta-rin',
-        rin_meses < 1  ? 'rojo'    :
-        rin_meses < 3  ? 'rojo'    :
-        rin_meses < 6  ? 'naranja' : 'verde',
-        rin_meses < 1  ? `🔴 [Externa] RIN CRÍTICA — ${rin_meses.toFixed(1)} meses. k reducido 50%. Riesgo de crisis cambiaria.` :
-        rin_meses < 3  ? `🔴 [Externa] RIN BAJA — ${rin_meses.toFixed(1)} meses. k reducido 30%. Zona de alerta.` :
-        rin_meses < 6  ? `🟠 [Externa] RIN PRECAUCIÓN — ${rin_meses.toFixed(1)} meses. k reducido 15%. Monitorear.` :
-                         `🟢 [Externa] RIN ADECUADA — ${rin_meses.toFixed(1)} meses. Sin penalización.`
+        rin_meses < rinCorte1  ? 'rojo'    :
+        rin_meses < rinCorte2  ? 'rojo'    :
+        rin_meses < rinCorte3  ? 'naranja' : 'verde',
+        rin_meses < rinCorte1  ? `🔴 [Externa] RIN CRÍTICA — ${rin_meses.toFixed(1)} meses. k reducido 50%. Riesgo de crisis cambiaria.` :
+        rin_meses < rinCorte2  ? `🔴 [Externa] RIN BAJA — ${rin_meses.toFixed(1)} meses. k reducido 30%. Zona de alerta.` :
+        rin_meses < rinCorte3  ? `🟠 [Externa] RIN PRECAUCIÓN — ${rin_meses.toFixed(1)} meses. k reducido 15%. Monitorear.` :
+                                 `🟢 [Externa] RIN ADECUADA — ${rin_meses.toFixed(1)} meses. Sin penalización.`
     );
 
     /* 2. BRECHA CAMBIARIA — Canal Externa */
@@ -890,8 +936,14 @@ function updateAlertas(b, newInf, rin_meses, delta_inf_dem, dY_total, cinSim, pi
     /* CORRECCIÓN: usaba b.inf_alim, que es el NIVEL del índice IPC-Alimentos
        (ej. 161.5), no una tasa — comparado contra umbrales de porcentaje
        (>10, >6), esta alerta estaba en ROJO permanentemente sin importar el
-       escenario. Ahora usa inf_alim_pct (variación dic-dic real). */
-    const inf_alim = (b.inf_alim_pct != null ? b.inf_alim_pct : 5) + delta_inf_dem * 1.3; /* alimentos más sensibles a demanda */
+       escenario. Ahora usa inf_alim_pct (variación dic-dic real).
+       CORRECCIÓN v12: la fórmula solo sumaba delta_inf_dem (componente de
+       demanda) — el botón "Aplicar choque 2013" y el slider de choque de
+       oferta mueven delta_inf_ofe, así que activarlos no movía esta alerta
+       pese a ser específicamente la alerta de alimentos (el choque de 2013
+       fue justamente un choque de oferta de alimentos, no de demanda). Ahora
+       se suma también delta_inf_ofe completo. */
+    const inf_alim = (b.inf_alim_pct != null ? b.inf_alim_pct : 5) + delta_inf_dem * 1.3 + delta_inf_ofe; /* alimentos más sensibles a demanda (1.3, SUPUESTO DE ESPECIFICACIÓN, declarado no calibrado) + choque de oferta completo */
     setAlerta('alerta-inf-alim',
         inf_alim > 10 ? 'rojo'    :
         inf_alim > 6  ? 'naranja' : 'verde',
@@ -965,6 +1017,12 @@ function updateMacro() {
     updateMacroEffects(pib, inf, des, inv, pob);
 }
 
+/* NOTA METODOLÓGICA (canal inverso Macro→Monetario): los pesos 0.38/0.50/0.30/
+   0.60/0.70/0.80/COEF.beta_cred×{0.6,0.8} de abajo no tienen la misma fuente
+   ni calibración que el motor principal (computeEffects). Es una aproximación
+   ilustrativa declarada, sin evidencia empírica propia recuperable — no debe
+   leerse como un canal simétrico y calibrado igual que Monetario→Macro. Ver
+   manual.md §4.2 y §5.3. */
 function updateMacroEffects(pib, inf, des, inv, pob) {
     const b = BASE[year];
     if (pib === undefined) return;
