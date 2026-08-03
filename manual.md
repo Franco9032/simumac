@@ -1,6 +1,6 @@
 # Manual de Uso — SimuMac
 ### Simulador Macroeconómico de Bolivia, 2010–2014
-### Versión 14.12.3
+### Versión 14.50.2
 ### Creado por Franz Nicol Vargas Crespo, 2026
 
 ---
@@ -30,7 +30,7 @@ Además, un botón fijo en la esquina inferior derecha (**📖 Manual**) abre es
 
 ### 1.2 Una regla que conviene tener presente
 
-Todos los datos provienen de fuentes oficiales verificadas (Instituto Nacional de Estadística, Banco Central de Bolivia, Ministerio de Economía, entre otras). Cuando un dato no existe para un año determinado —el caso más importante es 2010, año en que no se realizó la Encuesta de Hogares— la herramienta lo indica como "sin dato" en vez de inventar un número. Esto significa que **2010 no puede usarse como año base para simular**, aunque sí aparece en los gráficos históricos de Panorama y Datos.
+Todos los datos provienen de fuentes oficiales verificadas (Instituto Nacional de Estadística, Banco Central de Bolivia, Ministerio de Economía, entre otras). Cuando un dato no existe para un año determinado —el caso más importante es 2010, año en que no se realizó la Encuesta de Hogares, y que tampoco tiene un año previo dentro de la muestra para calcular la tasa de crecimiento del PIB— la herramienta lo indica como "sin dato" en vez de inventar un número. Esto significa que **2010 solo puede usarse como año base en modo Histórico** (lectura pura, sin mover palancas): al elegirlo, el Simulador cambia automáticamente a ese modo, porque Contrafactual e Hipotético necesitan una tasa de crecimiento de la cual partir que 2010 no tiene. 2010 sí aparece sin restricciones en los gráficos históricos de Panorama y Datos.
 
 ---
 
@@ -54,9 +54,10 @@ Se documentan los sucesos más relevantes del período (el aumento y posterior r
 
 ### 3.1 Cómo navegar
 
-Siete botones en la parte superior, uno por bloque temático: **Real, Fiscal, Monetario, Externo, Precios, Social, Contexto**. Cada bloque muestra sus propias tablas y gráficos, con dos elementos adicionales:
+Siete botones en la parte superior, uno por bloque temático: **Real, Fiscal, Monetario, Externo, Precios, Social, Contexto**. Cada bloque muestra sus propias tablas y gráficos, con tres elementos adicionales:
 
 - **Un recuadro de "teoría aplicable"**: qué marco económico corresponde usar para interpretar esos datos, y por qué. La herramienta no se limita a una sola teoría: usa la ecuación de gasto agregado para el bloque Real, la restricción de balanza de pagos para el bloque Externo, la curva de Phillips y la Ley de Okun para el bloque Precios, y así sucesivamente según lo que cada conjunto de datos permite estudiar.
+- **Un recuadro de "relación con el simulador"**, justo debajo del anterior: dice explícitamente si las variables de ese bloque son una palanca real del motor (por ejemplo, los 8 agregados del bloque Monetario son literalmente los sliders del Canal Monetario), si alimentan un resultado de la Síntesis sin ser palanca (como la inflación del bloque Precios), o si el bloque es puramente de contexto y no toca el motor de cálculo en absoluto (como Contexto, que solo informa qué tan grande fijar el choque de oferta a mano). La idea es que nunca quede ambiguo por qué se muestra cada dato específico.
 - **Selector de granularidad**, donde la fuente original lo permite (por ejemplo, los agregados monetarios y las tasas de interés tienen dato mensual completo; la pobreza y el desempleo, en cambio, solo existen a nivel anual porque así se levanta la encuesta que los mide).
 
 ### 3.2 Qué se puede hacer aquí
@@ -71,17 +72,17 @@ Esta es la sección más importante del manual. Se explica primero la lógica ge
 
 ### 4.1 Los controles que afectan a todo el simulador
 
-**Año base.** Se elige entre 2011, 2012, 2013 o 2014 (2010 no está disponible por la razón explicada en la sección 1.2). Todo lo que se simule parte de los datos reales de ese año.
+**Año base.** Se elige entre 2010, 2011, 2012, 2013 o 2014. 2010 es un caso especial: al seleccionarlo, el modo cambia automáticamente a Histórico y queda bloqueado ahí (ver sección 1.2) — el resto de los años admite los tres modos sin restricción. Todo lo que se simule parte de los datos reales del año elegido.
 
-**Modo de análisis.** Determina qué tan libre es la exploración:
+**Modo de análisis.** Tres botones junto a "Reset total" determinan qué tan libre es la exploración. Cada uno, al seleccionarse, muestra un mensaje propio explicando qué se puede (y no se puede) hacer en ese modo:
 
-- **Histórico**: todas las palancas quedan fijas en el valor observado — útil para revisar el año base sin alterarlo, como punto de referencia antes de empezar a modificar algo.
-- **Contrafactual**: las palancas están activas, pero ancladas al año base elegido. Es el modo por defecto y el más usado: "¿qué habría pasado en 2012 si...?".
-- **Hipotético**: las palancas se liberan con rangos más amplios, permitiendo explorar condiciones que Bolivia no vivió en este período (por ejemplo, reservas internacionales extremadamente bajas).
-
-**Contexto fiscal.** Una etiqueta informativa (no un control) que indica si el año base elegido tuvo superávit o déficit fiscal — se actualiza automáticamente según el año que se seleccione, con un icono (🟢 superávit, 🔴 déficit) para que el cambio de régimen sea visible de un vistazo.
+- **Histórico** (🔒, rojo): todas las palancas quedan fijas en el valor observado — útil para revisar el año base sin alterarlo, como punto de referencia antes de empezar a modificar algo.
+- **Contrafactual** (🔓, azul): las palancas están activas, pero ancladas al año base elegido. Es el modo por defecto y el más usado: "¿qué habría pasado en 2012 si...?".
+- **Hipotético** (🧪, ámbar): las palancas se liberan con rangos más amplios (RIN hasta 0 meses, CIN hasta ±15.000 MM Bs), permitiendo explorar condiciones que Bolivia no vivió en este período (por ejemplo, reservas internacionales extremadamente bajas).
 
 ### 4.2 Los cuatro canales
+
+Justo arriba de los cuatro botones de canal hay una barra de estado con el **contexto fiscal** del año base (superávit o déficit, según el signo del CIN observado) y el **régimen vigente**: una descripción breve del período (precio del gas, dolarización, si el CIN está o no monetizando el déficit) junto con los coeficientes ya ajustados por la Restricción Externa — φ, k_adj (el multiplicador que usa el Canal Fiscal) y β_adj (el que usa el Canal Crédito). Se muestra aquí, antes de entrar a cualquier canal, porque describe información que comparten tres de los cuatro canales a la vez.
 
 Debajo de los controles generales hay cuatro botones — uno por canal de transmisión de política económica. Cada canal se puede explorar de forma independiente, y **todos alimentan al mismo tiempo un resultado combinado que se ve en la Síntesis**, al final de esta misma pantalla, sin importar cuál canal tengas abierto en ese momento.
 
@@ -92,6 +93,10 @@ Debajo de los controles generales hay cuatro botones — uno por canal de transm
 **Cómo usarlo:** mueve el control deslizante de "Inversión pública real" entre 40% y 160% del nivel que efectivamente se ejecutó ese año. Al 100% no hay cambio (se reproduce la historia exactamente). Subirlo simula un estímulo fiscal; bajarlo, un ajuste.
 
 **Cómo leer el resultado:** el recuadro muestra el cambio porcentual en la inversión y, a la derecha, el efecto estimado sobre el PIB en puntos porcentuales. Hay además un menú para elegir qué tan sensible es esa relación (el "multiplicador"): puedes usar el valor típico del período completo, o el que corresponde específicamente a una de las cuatro transiciones anuales observadas.
+
+**Dos formas de usar este canal**, mediante el interruptor "Fiscal → Macro" / "Macro → Fiscal":
+- *Fiscal → Macro* (la vista habitual, descrita arriba): mueves la inversión y ves el efecto sobre el PIB.
+- *Macro → Fiscal* (la pregunta inversa): fijas cuántos puntos porcentuales de PIB adicional quieres lograr solo vía este canal, y la herramienta busca qué % de inversión pública real se necesita y mueve el control por ti. A diferencia del canal inverso de Monetario, no usa pesos ilustrativos: resuelve numéricamente la misma fórmula exacta que usa Fiscal → Macro, incluida la penalidad por saturación de capacidad si el objetivo llega a activarla — si el ΔPIB pedido no es alcanzable dentro del rango del control (40%-160%), la herramienta te lo indica y muestra el resultado más cercano posible.
 
 **Políticas ya preparadas**, si no quieres mover el control manualmente:
 - *Recorte de inversión* → lleva la inversión al 80% del año base (un ajuste moderado).
@@ -108,13 +113,13 @@ Debajo de los controles generales hay cuatro botones — uno por canal de transm
 
 **Un matiz importante:** la eficacia de este canal no es igual todos los años. Bolivia redujo de forma sostenida la proporción de depósitos en dólares durante este período (un proceso conocido como "bolivianización"), y eso hace que el mismo movimiento monetario tenga más efecto hacia 2014 que hacia 2010. Un menú permite comparar este comportamiento realista contra un supuesto más simple de eficacia constante, para ver cuánto cambia la conclusión según ese supuesto.
 
-**Dos formas de usar este canal**, mediante el interruptor "Monetario → Macro" / "Macro → Monetario":
+**Dos formas de usar este canal**, mediante el interruptor "Monetario → Macro" / "Macro → Monetario" que encontrarás arriba de los ocho controles, dentro de esta misma sección:
 - *Monetario → Macro* (la vista habitual): mueves los agregados y ves el efecto sobre el PIB, la inflación, etc. Este es el motor principal de la herramienta, con cada coeficiente documentado en Metodología.
 - *Macro → Monetario* (la pregunta inversa): fijas una meta macroeconómica (por ejemplo, "quiero 8% de crecimiento") y la herramienta estima qué tan grandes tendrían que ser los agregados monetarios para sostenerla. **Nota importante**: a diferencia del motor principal, esta dirección inversa usa una aproximación ilustrativa con pesos fijos por variable, no un canal simétrico ni calibrado con la misma evidencia que Monetario → Macro. Sirve para tener una intuición de orden de magnitud, no para leer sus resultados con el mismo nivel de confianza que el resto del Simulador.
 
 **Políticas monetarias ya preparadas**, con su tabla explicativa (qué instrumento del Banco Central representa cada una, y qué canal activa): Expansiva, Contractiva, Compra de valores en el mercado (OMA Compra), Venta de valores (OMA Venta), Aumento del encaje legal, y Profundización de la bolivianización.
 
-**Ejercicio guiado:** elige 2010 como referencia visual en Panorama (recordando que no puedes usarlo como año base del simulador), luego ve a 2014 en el Simulador y aplica la política "Bolivianización". Compara el efecto con la misma política aplicada sobre 2011. La diferencia que observes es precisamente el resultado de que el canal monetario se había vuelto más eficaz hacia el final del período.
+**Ejercicio guiado:** elige 2010 como referencia visual en Panorama (recordando que como año base del Simulador solo admite modo Histórico, sin políticas activas), luego ve a 2014 en el Simulador y aplica la política "Bolivianización". Compara el efecto con la misma política aplicada sobre 2011. La diferencia que observes es precisamente el resultado de que el canal monetario se había vuelto más eficaz hacia el final del período.
 
 #### Canal Crédito
 
@@ -127,6 +132,10 @@ Debajo de los controles generales hay cuatro botones — uno por canal de transm
 **Cómo usarlo:** el control deslizante mueve el "Crédito Interno Neto simulado", expresado en millones de bolivianos. Puede tomar valores negativos (indicando que el fisco no necesita financiamiento del Banco Central — el canal permanece inactivo) o positivos (indicando financiamiento monetario del déficit — el canal se activa). El efecto sobre el PIB y la inflación aparece más marcado cuanto más se aleje el valor simulado del valor que realmente ocurrió ese año.
 
 **Un indicador adicional en este canal**: el **señoreaje**, expresado como porcentaje del PIB. Es el llamado "impuesto inflacionario" — cuánto del gasto público se está financiando con la creación de dinero en lugar de con ingresos genuinos. Cuando el Crédito Interno Neto simulado coincide con el valor histórico, el señoreaje muestra 0% (no hay cambio respecto a lo ya ocurrido); al aumentar el financiamiento monetario simulado, el señoreaje sube en proporción directa.
+
+**Dos formas de usar este canal**, mediante el interruptor "Crédito → Macro" / "Macro → Crédito":
+- *Crédito → Macro* (la vista habitual, descrita arriba): mueves el CIN simulado y ves el efecto sobre el PIB.
+- *Macro → Crédito* (la pregunta inversa): fijas cuántos puntos porcentuales de PIB adicional quieres lograr solo vía este canal, y la herramienta busca el CIN simulado necesario. Como la activación del canal es una rampa suave (no lineal), este cálculo se resuelve numéricamente sobre la misma fórmula del motor, no con pesos aproximados — si el objetivo pedido no es alcanzable dentro del rango del control deslizante, la herramienta te lo indica y muestra el resultado más cercano posible.
 
 **Políticas ya preparadas:**
 - *Monetización total del déficit* → simula que el Banco Central cubre una necesidad grande de financiamiento.
@@ -143,6 +152,8 @@ Debajo de los controles generales hay cuatro botones — uno por canal de transm
 **Cómo usarlo:** el control deslizante mueve las reservas internacionales simuladas, expresadas en meses de importaciones que podrían financiarse con ellas. En el modo Hipotético, el rango se extiende hasta valores extremos (incluso cero) que Bolivia no experimentó en este período.
 
 **Umbral de referencia ajustable**: un selector permite elegir entre 6 y 12 meses de importaciones como umbral que activa la restricción. Seis meses es la convención estándar de cobertura de importaciones; doce meses es un criterio más conservador, citado en parte de la literatura para economías dependientes de la exportación de materias primas (como el gas en el caso boliviano). Cambiar el umbral solo tiene efecto visible cuando las reservas simuladas se acercan a él — en modo Histórico este selector queda bloqueado, porque las RIN observadas están muy por encima de cualquiera de los dos umbrales.
+
+**Por qué este canal no tiene un interruptor "→ Macro" / "Macro →"**, a diferencia de Fiscal, Monetario y Crédito: la Restricción Externa no genera un efecto propio sobre el PIB — es un atenuador que reduce la potencia de los otros dos canales de demanda (Fiscal y Crédito) cuando las reservas caen por debajo del umbral. No existe entonces una "meta de PIB vía Restricción Externa" de la cual partir para invertir el cálculo. El equivalente más honesto a esa pregunta inversa ya está disponible de forma directa: el **RIN mínimo antes de que la restricción empiece a penalizar es, exactamente, el umbral que elijas arriba** (6 o 12 meses).
 
 **Ejercicio guiado:** activa el modo Hipotético, elige cualquier año, y reduce las reservas simuladas por debajo de 6 meses. Observa cómo esto penaliza automáticamente el efecto de los canales Fiscal y de Crédito — la lógica es que un país con reservas escasas no puede sostener el mismo nivel de estímulo sin generar presión sobre el tipo de cambio.
 

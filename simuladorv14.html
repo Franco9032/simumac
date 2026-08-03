@@ -1,0 +1,1208 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SimuMac — Simulador Macroeconómico de Bolivia 2010–2014</title>
+<link rel="icon" type="image/svg+xml" href="simumac_icon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<link rel="stylesheet" href="estilitosA.css">
+
+<style>
+/* ── SELECTOR DE RÉGIMEN ── */
+.regimen-bar {
+  background: var(--bg2);
+  border-radius: 14px;
+  padding: 1.2rem 1.75rem;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.regimen-bar label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: .07em;
+}
+.regimen-sel {
+  font-size: 14px;
+  font-weight: 500;
+  background: var(--bg3);
+  color: var(--text);
+  border: none;
+  border-radius: 999px;
+  padding: 7px 18px;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+  flex: 1;
+  max-width: 280px;
+}
+.regimen-desc {
+  font-size: 13px;
+  color: var(--text3);
+  flex: 2;
+  font-style: italic;
+}
+.phi-badge {
+  font-size: 11px;
+  font-family: 'JetBrains Mono', 'SF Mono', monospace;
+  color: var(--accent);
+  background: var(--accent3);
+  border-radius: 8px;
+  padding: 3px 10px;
+}
+
+/* ── PANEL DE ALERTAS ── */
+.alertas-panel {
+  background: var(--bg2);
+  border-radius: 14px;
+  padding: 1.2rem 1.75rem;
+  margin-top: 1.5rem;
+  margin-bottom: 8px;
+}
+.alertas-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  margin-bottom: .9rem;
+}
+.alerta-item {
+  font-size: 13px;
+  border-radius: 10px;
+  padding: 8px 14px;
+  margin-bottom: 6px;
+  line-height: 1.5;
+  letter-spacing: -.01em;
+}
+.alerta-verde  { background: var(--teal-bg);   color: var(--teal); }
+.alerta-naranja{ background: var(--amber-bg);  color: var(--amber); }
+.alerta-rojo   { background: var(--red-bg);    color: var(--red);  font-weight: 600; }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-brand"><img src="simumac_icon.svg" alt="SimuMac" style="height:24px;width:24px;vertical-align:middle;margin-right:6px;">SimuMac<span style="font-size:10px;font-weight:400;color:var(--text3);margin-left:6px;vertical-align:middle;">v14.50.2</span></div>
+  <div class="nav-links" id="navLinks">
+    <a href="#" class="active" onclick="showPage('pg-panorama',this)"><span>Panorama</span></a>
+    <a href="#" onclick="showPage('pg-datos',this)"><span>Datos</span></a>
+    <a href="#" onclick="showPage('pg-simulador',this)"><span>Simulador</span></a>
+    <a href="#" onclick="showPage('pg-metodologia',this)"><span>Metodología</span></a>
+  </div>
+</nav>
+
+<div class="hero">
+  <img src="simumac_logo.svg" alt="SimuMac — Simulador Macroeconómico" style="max-width:320px;height:auto;margin-bottom:14px;">
+  <div class="hero-eyebrow">Análisis Macroeconómico · Bolivia</div>
+  <h1>Bolivia 2010 – 2014</h1>
+  <p>Datos oficiales del INE, BCB, UDAPE/MEFP, APS, FMI y NOAA. Todos los valores son reales y citados con su fuente exacta.</p>
+  <div class="hero-tags">
+    <span class="tag">INE — Cuentas Nacionales</span>
+    <span class="tag">INE — Encuesta de Hogares</span>
+    <span class="tag">BCB — Sector Monetario</span>
+    <span class="tag">BCB — ITI Núcleo/Subyacente</span>
+    <span class="tag">UDAPE/MEFP — Fiscal</span>
+    <span class="tag">VIPFE — Inversión Pública</span>
+    <span class="tag">APS — Seguridad Social</span>
+    <span class="tag">FMI — Commodities</span>
+    <span class="tag">NOAA — Índice ENSO</span>
+  </div>
+</div>
+
+<div class="page active" id="pg-panorama">
+  <div class="container">
+
+    <!-- KPIs -->
+    <div class="section">
+      <div class="section-title">Indicadores macroeconómicos verificados — 2010-2014</div>
+      <p style="font-size:13px;color:var(--text2);margin:-8px 0 14px;">Las 20 variables clave del proyecto, año por año. "sin dato" marca ausencias reales de la fuente (2010: sin año previo en la muestra para el crecimiento del PIB, sin Encuesta de Hogares para empleo y pobreza) — nunca interpolado.</p>
+      <div style="overflow-x:auto;">
+      <table class="coef-table">
+        <thead><tr><th>Indicador</th><th>2010</th><th>2011</th><th>2012</th><th>2013</th><th>2014</th></tr></thead>
+        <tbody>
+          <tr><td style="text-align:left">PIB real (millones de Bs de 1990)</td><td>32.586</td><td>34.281</td><td>36.037</td><td>38.487</td><td>40.588</td></tr>
+          <tr><td style="text-align:left">PIB nominal (millones de Bs corrientes)</td><td>137.876</td><td>166.232</td><td>187.154</td><td>211.856</td><td>228.004</td></tr>
+          <tr><td style="text-align:left">Crecimiento PIB real (%)</td><td><span style="color:var(--text3);font-style:italic;">sin dato</span></td><td>5.2%</td><td>5.1%</td><td>6.8%</td><td>5.5%</td></tr>
+          <tr><td style="text-align:left">Inflación general — acum. dic. (%)</td><td>7.2%</td><td>6.9%</td><td>4.5%</td><td>6.5%</td><td>5.2%</td></tr>
+          <tr><td style="text-align:left">Inflación núcleo — acum. dic. (%)</td><td>6.1%</td><td>8.8%</td><td>4.8%</td><td>4.1%</td><td>4.3%</td></tr>
+          <tr><td style="text-align:left">Inflación subyacente — acum. dic. (%)</td><td>5.7%</td><td>6.5%</td><td>3.5%</td><td>4.3%</td><td>3.9%</td></tr>
+          <tr><td style="text-align:left">Tasa de desocupación (%)</td><td><span style="color:var(--text3);font-style:italic;">sin dato</span></td><td>2.65%</td><td>2.31%</td><td>2.85%</td><td>2.34%</td></tr>
+          <tr><td style="text-align:left">PEA total (personas)</td><td><span style="color:var(--text3);font-style:italic;">sin dato</span></td><td>5.285.784</td><td>5.023.471</td><td>5.374.336</td><td>5.550.576</td></tr>
+          <tr><td style="text-align:left">Desocupados (personas)</td><td><span style="color:var(--text3);font-style:italic;">sin dato</span></td><td>140.105</td><td>116.111</td><td>153.420</td><td>129.918</td></tr>
+          <tr><td style="text-align:left">Pobreza moderada — nacional (%)</td><td><span style="color:var(--text3);font-style:italic;">sin dato</span></td><td>45.1%</td><td>43.3%</td><td>38.9%</td><td>39.1%</td></tr>
+          <tr><td style="text-align:left">Pobreza extrema — nacional (%)</td><td><span style="color:var(--text3);font-style:italic;">sin dato</span></td><td>21.0%</td><td>21.6%</td><td>18.7%</td><td>17.2%</td></tr>
+          <tr><td style="text-align:left">Inversión pública ejecutada (millones $us)</td><td>1521.1</td><td>2181.5</td><td>2897.2</td><td>3780.7</td><td>4507.1</td></tr>
+          <tr><td style="text-align:left">Balance fiscal SPNF (% PIB; + = déficit)</td><td>-1.68%</td><td>-0.83%</td><td>-1.76%</td><td>-0.65%</td><td>3.36%</td></tr>
+          <tr><td style="text-align:left">Crédito Interno Neto BCB→SPNF (millones Bs)</td><td>-3.730</td><td>-4.347</td><td>-7.631</td><td>-6.645</td><td>4.597</td></tr>
+          <tr><td style="text-align:left">Precio exportación gas natural (USD/ton)</td><td>315.9</td><td>404.4</td><td>488.0</td><td>471.0</td><td>446.4</td></tr>
+          <tr><td style="text-align:left">Deuda externa pública (millones $us)</td><td>2.891</td><td>3.492</td><td>4.196</td><td>5.262</td><td>5.736</td></tr>
+          <tr><td style="text-align:left">Dolarización de depósitos (%)</td><td>44.1%</td><td>35.5%</td><td>27.1%</td><td>22.3%</td><td>18.9%</td></tr>
+          <tr><td style="text-align:left">RIN (meses de importación)</td><td>20.8</td><td>18.2</td><td>19.5</td><td>17.9</td><td>17.0</td></tr>
+          <tr><td style="text-align:left">Salario Mínimo Nacional (Bs)</td><td>679.5</td><td>815.4</td><td>1000.0</td><td>1200.0</td><td>1440.0</td></tr>
+          <tr><td style="text-align:left">Afiliados al SIP (personas)</td><td>1.360.599</td><td>1.450.135</td><td>1.551.733</td><td>1.669.939</td><td>1.794.228</td></tr>
+        </tbody>
+      </table>
+      </div>
+    </div>
+    <!-- CHARTS -->
+    <div class="section">
+      <div class="section-title">Visualización de datos reales</div>
+      <div class="agg-header" style="margin-bottom:1rem;">
+        <h3 style="font-size:13px;color:var(--text2);font-weight:500;">PIB e inflación admiten mayor detalle temporal — el resto queda a la frecuencia con la que la fuente los publica.</h3>
+        <select class="base-sel" id="sel-gran-panorama" onchange="updatePanoramaGranularidad()">
+          <option value="anual" selected>PIB/Inflación: Anual</option>
+          <option value="trimestral">PIB/Inflación: Trimestral</option>
+          <option value="mensual">Inflación: Mensual (PIB cae a trimestral)</option>
+        </select>
+      </div>
+      <div class="chart-grid">
+
+        <div class="chart-card">
+          <h3>PIB real (millones de Bs de 1990)</h3>
+          <div class="chart-src" id="src-pib">INE Cuadro 6.01.01 · precios constantes Bs 1990 · anual</div>
+          <div class="chart-wrap"><canvas id="c-pib"></canvas></div>
+        </div>
+
+        <div class="chart-card">
+          <h3>PIB nominal (millones de Bs corrientes)</h3>
+          <div class="chart-src" id="src-pibn">INE Cuadro 6.01.02 · anual</div>
+          <div class="chart-wrap"><canvas id="c-pibn"></canvas></div>
+        </div>
+
+        <div class="chart-card">
+          <h3>Inflación — 3 medidas (%)</h3>
+          <div class="chart-src" id="src-inf">BCB Memoria 2013 · INE/UDAPE IPC · anual (acum. dic.)</div>
+          <div class="chart-wrap"><canvas id="c-inf"></canvas></div>
+        </div>
+
+        <div class="chart-card">
+          <h3>PEA y desocupados (miles de personas) <span class="tag" style="font-size:10px;">solo anual</span></h3>
+          <div class="chart-src">INE Cuadro 3.04.01.01 · Encuesta Continua de Empleo · sin dato mensual/trimestral en la fuente</div>
+          <div class="chart-wrap"><canvas id="c-desemp"></canvas></div>
+        </div>
+
+        <div class="chart-card">
+          <h3>Pobreza moderada y extrema — nacional (%) <span class="tag" style="font-size:10px;">solo anual</span></h3>
+          <div class="chart-src">INE Cuadros 3.06.01.01 y 3.06.01.02 · Encuesta de Hogares es de periodicidad anual</div>
+          <div class="chart-wrap"><canvas id="c-pob"></canvas></div>
+        </div>
+
+        <div class="chart-card">
+          <h3>Inversión pública ejecutada (millones $us) <span class="tag" style="font-size:10px;">solo anual</span></h3>
+          <div class="chart-src">VIPFE / MEFP Cuadro III.10 · ejecución reportada anualmente</div>
+          <div class="chart-wrap"><canvas id="c-inv"></canvas></div>
+        </div>
+
+        <div class="chart-card">
+          <h3>Tasas de interés — activas y pasivas, MN y ME (%)</h3>
+          <div class="chart-src" id="src-tasas">BCB, Sistema Bancario · mensual · 2010-2014 completo</div>
+          <div class="chart-wrap"><canvas id="c-tasas"></canvas></div>
+        </div>
+
+        <div class="chart-card">
+          <h3>Crédito Interno Neto BCB → SPNF (millones de Bs) <span class="tag" style="font-size:10px;">solo anual</span></h3>
+          <div class="chart-src">UDAPE/MEFP Cuadro 3.1.1 · negativo = superávit sin monetizar</div>
+          <div class="chart-wrap"><canvas id="c-cin"></canvas></div>
+        </div>
+
+        <div class="chart-card">
+          <h3>RIN en meses de importación (umbral φ = 6) <span class="tag" style="font-size:10px;">solo anual</span></h3>
+          <div class="chart-src">BCB, Cuadro 1.4.5.2 · Reservas Internacionales Netas</div>
+          <div class="chart-wrap"><canvas id="c-rin"></canvas></div>
+        </div>
+
+      </div>
+
+      <div class="chart-card" style="margin-bottom:16px;">
+        <h3>Agregados monetarios — serie completa 2010-2014 (miles de Bs)</h3>
+        <div class="chart-src" id="src-agg">BCB — Sector Monetario · Saldos a fin de mes · mensual · MN=Moneda Nacional · ME=Moneda Extranjera</div>
+        <div class="chart-wrap" style="height:250px;"><canvas id="c-agg-compare"></canvas></div>
+      </div>
+    </div>
+
+    <!-- ANÁLISIS -->
+    <div class="section">
+      <div class="section-title">Análisis contextual</div>
+      <p style="font-size:13px;color:var(--text2);margin:-8px 0 14px;">Recorrido año por año, 2010-2014, con las cifras verificadas en la Hoja de Datos.</p>
+
+      <div class="analysis-card">
+        <h3>PIB y crecimiento</h3>
+        <p>El PIB real (Bs de 1990) creció de forma sostenida los 5 años: Bs 32.586 millones en 2010, 34.281 en 2011 (+5.2%), 36.037 en 2012 (+5.1%), 38.487 en 2013 (+6.8%, el año de mayor crecimiento del período) y 40.588 en 2014 (+5.5%). En términos nominales pasó de Bs 137.876 millones (2010) a Bs 228.004 millones (2014), un incremento de 65% en 5 años.</p>
+        <p>Por el lado del gasto (Y=C+I+G+X−M, todo en Bs de 1990), el consumo privado es el componente dominante todo el período (Bs 23.120 → 28.412 millones, 2010→2014), seguido del consumo público (Bs 3.562 → 4.673 millones) y la FBKF (Bs 5.553 → 8.649 millones, +56% en 5 años — el componente más dinámico). Las exportaciones crecieron de Bs 10.249 a 14.016 millones, pero las importaciones lo hicieron más rápido (Bs 10.035 → 15.244 millones), por lo que la balanza comercial real se estrecha hacia 2014 — coherente con el quiebre fiscal del mismo año.</p>
+      </div>
+
+      <div class="analysis-card">
+        <h3>Inflación — cinco años y el choque de oferta de 2013</h3>
+        <p>La inflación general acumulada a diciembre fue 7.18% (2010), 6.90% (2011), 4.54% (2012), 6.48% (2013) y 5.19% (2014). El año más inusual es 2011: la inflación núcleo (8.79%) superó a la general (6.90%), lo opuesto al patrón habitual lo que  sugiere presión de demanda generalizada ese año, no un choque puntual. En 2012 las tres medidas convergen (4.54% general, 4.84% núcleo, 3.52% subyacente), el año más "tranquilo" del período.</p>
+        <p>2013 vuelve a mostrarse como el año atípico ya documentado: la inflación general (6.48%) superó a la núcleo —que excluye alimentos frescos y otros ítems volátiles, y por eso aproxima mejor la tendencia de fondo— por 2.38 puntos porcentuales (6.48% vs. 4.10%). Una brecha tan amplia entre ambas medidas es la firma típica de un choque de oferta concentrado en pocos productos, y el propio BCB lo confirma en su Memoria 2013: la papa, el tomate y el pollo explicaron el 76% de la inflación de agosto y el 80% de la de septiembre de ese año. En 2014 las tres medidas vuelven a moverse juntas (general 5.19%, núcleo 4.34%, subyacente 3.92%, todas dentro de 1.3 pp entre sí), señal de que ese año no hubo un choque de oferta comparable al de 2013.</p>
+      </div>
+
+      <div class="analysis-card">
+        <h3>Mercado laboral</h3>
+        <p>2010 no tiene dato: el INE no levantó la Encuesta de Hogares ese año. Desde 2011, la PEA crece cada año (5.286.000 → 5.551.000 personas, 2011→2014), pero la tasa de desocupación no sigue una tendencia limpia: 2.65% (2011) → 2.31% (2012, el mínimo del período) → 2.85% (2013, el máximo) → 2.34% (2014). El repunte de 2013 coincide con el choque de alimentos — consistente con una economía que absorbe oferta laboral adicional más lento en un año de precios inestables, aunque los niveles siguen siendo bajos en cualquier comparación regional.</p>
+      </div>
+
+      <div class="analysis-card">
+        <h3>Pobreza</h3>
+        <p>La pobreza moderada cae de forma sostenida: 45.1% (2011) → 43.3% (2012) → 38.9% (2013) → 39.1% (2014, leve repunte de 0.2 pp). La extrema seguía cayendo incluso en 2014: 21.0% (2011) → 21.6% (2012, único año con repunte) → 18.7% (2013) → 17.2% (2014). El patrón es notable: pese al quiebre fiscal de 2014, la pobreza extrema sigue mejorando ese año — el deterioro macro de 2014 no se trasladó de inmediato al indicador social más sensible, algo que merece explorarse con más años de datos antes de sacar conclusiones sobre el rezago.</p>
+      </div>
+
+      <div class="analysis-card">
+        <h3>Inversión pública</h3>
+        <p>La inversión pública ejecutada crece cada año del período, sin excepción: USD 1.521 millones (2010) → 2.182 (2011) → 2.897 (2012) → 3.781 (2013) → 4.507 millones (2014) — un incremento acumulado de 196% en 5 años. Es la variable con la trayectoria más lineal de todo el proyecto: ni el choque de alimentos de 2013 ni el quiebre fiscal de 2014 interrumpen su crecimiento, aunque 2014 es precisamente el año en que esa inversión deja de financiarse con superávit y empieza a depender del Crédito Interno Neto (Canal C, ver pestaña Canal Crédito).</p>
+      </div>
+
+      <div class="analysis-card">
+        <h3>Tasas de interés — activas y pasivas, MN y ME</h3>
+        <p>La tasa activa promedio en moneda nacional sube de forma sostenida: 4.73% (2010) → 5.83% (2011) → 6.31% (2012) → 6.27% (2013) → 6.53% (2014). La tasa activa en moneda extranjera es sistemáticamente más alta pero más estable: 7.79% → 8.00% → 8.29% → 8.09% → 7.63%. La brecha ME−MN se va cerrando con los años (3.06 pp en 2010, apenas 1.10 pp en 2014) — coherente con la bolivianización que documentamos en el Canal Monetario: a medida que cae la dolarización de depósitos, también converge el costo relativo de endeudarse en cada moneda.</p>
+      </div>
+
+      <div class="analysis-card">
+        <h3>2014 — el año de quiebre</h3>
+        <p>Cuatro señales de bloques de datos distintos convergen en 2014: el SPNF registra su primer déficit desde 2006 (balance −7.669 millones de Bs, equivalente a +3.4% del PIB), el Crédito Interno Neto del BCB al Sector Público se vuelve positivo por primera vez en el período (+4.597 MM Bs, tras cuatro años negativos), la deuda externa pública casi se duplica desde 2010 (2.891 → 5.736 millones de $us), y el precio de exportación del gas ya viene en descenso desde el pico de 2012 (488 → 446 USD/tonelada). El Canal C —crédito BCB al Tesoro— pasa de inactivo a activo exactamente en este año, no antes.</p>
+      </div>
+
+      <div class="analysis-card">
+        <h3>El choque de alimentos de 2013 no fue un evento climático</h3>
+        <p>El Índice Oceánico El Niño (ONI, NOAA) está prácticamente neutro en el trimestre exacto del pico del choque (agosto-octubre 2013: entre −0.21 y −0.13), sin un episodio de El Niño ni de La Niña definido. Esto descarta una causa climática regional de gran escala: el choque de papa, tomate y pollo documentado por el BCB fue, con la evidencia disponible, un fenómeno de oferta interno —posiblemente estacional o logístico— y no un evento ENSO.</p>
+      </div>
+
+      <div class="sub-title" style="margin-top:1rem;">Hitos documentados — con fuente</div>
+      
+      <div class="analysis-card">
+        <h3>Diciembre 2010 — el "gasolinazo" <span style="font-weight:400;color:var(--text2);">(Bloque 2 · Fiscal — reversión de una medida de ajuste al subsidio a los combustibles)</span></h3>
+        <p>El 26 de diciembre de 2010 el gobierno (García Linera, presidente en ejercicio) subió el precio de la gasolina y el diésel casi 100% vía Decreto Supremo 748, buscando reducir el subsidio fiscal y el contrabando de combustible. Protestas masivas en La Paz, El Alto y otras ciudades obligaron a abrogarlo apenas 5 días después (D.S. 759, 31 dic 2010).</p>
+        <p style="font-size:12px;"><a href="https://es.wikipedia.org/wiki/Nivelaci%C3%B3n_en_el_precio_de_los_carburantes_en_Bolivia" target="_blank" rel="noopener" style="color:var(--accent);">Wikipedia — Nivelación en el precio de los carburantes en Bolivia</a> · <a href="https://eju.tv/2010/12/gasolinazo-regalo-de-evo-desat-caos-e-indignacin/" target="_blank" rel="noopener" style="color:var(--accent);">eju.tv, dic. 2010</a></p>
+      </div>
+
+      <div class="analysis-card">
+        <h3>Agosto-octubre 2011 — la marcha del TIPNIS frena la carretera Villa Tunari-San Ignacio de Moxos <span style="font-weight:400;color:var(--text2);">(Bloque 2 · Fiscal — contraejemplo: inversión pública grande, contratada y financiada, que se congela por conflicto social)</span></h3>
+        <p>El 15 de agosto de 2011 partió desde Trinidad (Beni) la VIII marcha indígena de tierras bajas, en rechazo a una carretera de unos 300 km entre Villa Tunari y San Ignacio de Moxos que atravesaría el TIPNIS, financiada con crédito brasileño (BNDES) por cerca de $us 420 millones. La represión policial en Chaparina (24-25 de septiembre) no logró frenar la marcha, que llegó a La Paz el 19 de octubre; el gobierno cedió y el Congreso aprobó poco después la Ley 180, que prohíbe la carretera por el parque. Es el contraejemplo de la serie de inversión pública que en el bloque fiscal crece sin pausa todo el período: aquí un proyecto grande y ya financiado se detiene por conflicto social, un riesgo que la cifra agregada de inversión no captura.</p>
+        <p style="font-size:12px;"><a href="https://es.wikipedia.org/wiki/Protestas_por_el_TIPNIS_en_Bolivia_de_2011" target="_blank" rel="noopener" style="color:var(--accent);">Wikipedia — Protestas por el TIPNIS en Bolivia de 2011</a> · <a href="https://boliviaverifica.bo/carretera-por-el-tipnis-lo-que-hay-que-saber-del-conflicto-que-lleva-decadas/" target="_blank" rel="noopener" style="color:var(--accent);">Bolivia Verifica</a></p>
+      </div>
+
+      <div class="analysis-card">
+        <h3>1 de mayo de 2012 — nacionalización de la Transportadora de Electricidad (TDE) <span style="font-weight:400;color:var(--text2);">(Bloque 4 · Externo — salida de inversión extranjera directa, visible en la cuenta de capital de la balanza de pagos)</span></h3>
+        <p>Mediante Decreto Supremo 1214, el gobierno nacionalizó la Transportadora de Electricidad (TDE), filial de la española Red Eléctrica Internacional que controlaba el 73% de las líneas de transmisión del Sistema Troncal Interconectado. La medida, parte de una ola de nacionalizaciones en electricidad e hidrocarburos, redujo el stock de inversión extranjera directa en Bolivia y abrió una disputa de compensación con España que se resolvió recién en 2015 (D.S. 2340). Es un caso de manual para el bloque externo: un evento que no se ve en exportaciones ni en tipo de cambio, pero sí golpea directamente la cuenta de capital y financiera de la balanza de pagos.</p>
+        <p style="font-size:12px;"><a href="https://www.lexivox.org/norms/BO-DS-N1214.html" target="_blank" rel="noopener" style="color:var(--accent);">Lexivox — Decreto Supremo N° 1214</a> · <a href="https://www.realinstitutoelcano.org/analisis/la-nacionalizacion-de-tde-analisis-desde-el-derecho-internacional-ari/" target="_blank" rel="noopener" style="color:var(--accent);">Real Instituto Elcano — análisis jurídico</a></p>
+      </div>
+
+      <div class="analysis-card">
+        <h3>Agosto-septiembre 2013 — el choque de alimentos, según el propio BCB <span style="font-weight:400;color:var(--text2);">(Bloque 5 · Precios — fuente primaria del choque de oferta ya analizado arriba, contrastado con el ONI)</span></h3>
+        <p>La Memoria 2013 del Banco Central documenta una ola de frío en agosto y una de las sequías más fuertes de los últimos años en el sureste del país, que destruyeron cultivos de papa y tomate y explicaron más del 75% de la inflación de esos dos meses — la fuente primaria del hallazgo que ya verificamos con el ONI.</p>
+        <p style="font-size:12px;"><a href="https://www.bcb.gob.bo/webdocs/publicacionesbcb/gestion2013_capitulo2.pdf" target="_blank" rel="noopener" style="color:var(--accent);">BCB — Memoria 2013, Capítulo 2 (PDF oficial)</a></p>
+      </div>
+
+      <div class="analysis-card">
+        <h3>Segunda mitad de 2014 — colapso del precio internacional del petróleo <span style="font-weight:400;color:var(--text2);">(Bloque 4 y 2 · Externo y Fiscal — explica el origen externo del "año de quiebre" documentado arriba)</span></h3>
+        <p>Desde mediados de 2014 el precio internacional del petróleo cayó de unos $us 105 a cerca de $us 50 por barril hacia fin de año. Como los contratos de exportación de gas de Bolivia a Brasil y Argentina están indexados a una canasta de fuel oil con rezago de varios meses, el golpe sobre el precio de exportación del gas —que según la Hoja de Datos ya venía bajando desde el pico de 2012— se intensificó, afectando directamente los ingresos por IDH, regalías y divisas de exportación. Es la pieza externa que completa el relato de "2014 — el año de quiebre" de esta misma sección: el gasto público no solo se aceleró, el ingreso externo empezó a caer el mismo año.</p>
+        <p style="font-size:12px;"><a href="https://www.imf.org/es/Blogs/Articles/2015/02/26/4984" target="_blank" rel="noopener" style="color:var(--accent);">FMI — Impacto fiscal de la caída de los precios del petróleo en América Latina y el Caribe</a></p>
+      </div>
+
+  </div>
+  </div>
+</div>
+
+<div class="page" id="pg-datos">
+  <div class="container">
+
+    <div class="section">
+      <div class="section-title">Datos — navegador por bloque</div>
+      <div class="canal-tabs" style="margin-bottom:14px;flex-wrap:wrap;">
+        <button class="active" onclick="showDataPanel('db-real',this)">1 · Real</button>
+        <button onclick="showDataPanel('db-fiscal',this)">2 · Fiscal</button>
+        <button onclick="showDataPanel('db-monetario',this)">3 · Monetario</button>
+        <button onclick="showDataPanel('db-externo',this)">4 · Externo</button>
+        <button onclick="showDataPanel('db-precios',this)">5 · Precios</button>
+        <button onclick="showDataPanel('db-social',this)">6 · Social</button>
+        <button onclick="showDataPanel('db-contexto',this)">7 · Contexto</button>
+      </div>
+
+
+      <div class="datapanel active" id="db-real">
+        <div class="info-box" style="font-size:13px;"><strong>Teoría aplicable:</strong> Y = C + I + G + X − M (identidad del gasto agregado). Los componentes de este bloque permiten descomponer el crecimiento del PIB por el lado de la demanda, no solo verlo como un agregado.</div>
+        <div style="font-family:'Inter',sans-serif;font-size:10px;color:var(--text3);margin-top:6px;"><strong>Relación con el simulador:</strong> esta serie de PIB real no es en sí una palanca — es el denominador de la fórmula del Canal Fiscal (dY_fiscal = k_adj × ΔInv_real/PIB_real_base × 100) y la base sobre la que se calibró k_fiscal (Metodología). Verla aquí en detalle ayuda a entender de dónde sale ese denominador antes de mover el slider en Simulador → Canal Fiscal.</div>
+        <div class="agg-header" style="margin:12px 0;">
+          <h3 style="font-size:13px;color:var(--text2);font-weight:500;">PIB por el gasto — granularidad disponible: trimestral y anual</h3>
+          <select class="base-sel" id="sel-gran-real" onchange="updateDatosReal()">
+            <option value="anual" selected>Vista: Anual</option>
+            <option value="trimestral">Vista: Trimestral</option>
+          </select>
+        </div>
+        <div class="chart-wrap" style="height:280px;"><canvas id="c-datos-real"></canvas></div>
+        <div style="overflow-x:auto;margin-top:14px;">
+        <table class="coef-table">
+          <thead><tr><th>Componente (millones Bs 1990)</th><th>2010</th><th>2011</th><th>2012</th><th>2013</th><th>2014</th></tr></thead>
+          <tbody>
+            <tr><td style="text-align:left">PIB real</td><td>32586</td><td>34281</td><td>36037</td><td>38487</td><td>40588</td></tr>
+            <tr><td style="text-align:left">Consumo privado (C)</td><td>23120</td><td>24323</td><td>25443</td><td>26951</td><td>28412</td></tr>
+            <tr><td style="text-align:left">Consumo público (G)</td><td>3562</td><td>3820</td><td>4007</td><td>4379</td><td>4673</td></tr>
+            <tr><td style="text-align:left">FBKF (I)</td><td>5553</td><td>6870</td><td>7044</td><td>7870</td><td>8649</td></tr>
+            <tr><td style="text-align:left">Exportaciones (X)</td><td>10249</td><td>10719</td><td>12145</td><td>12642</td><td>14016</td></tr>
+            <tr><td style="text-align:left">Importaciones (M)</td><td>10035</td><td>11742</td><td>12245</td><td>13247</td><td>15244</td></tr>
+          </tbody>
+        </table>
+        </div>
+      </div>
+
+
+      <div class="datapanel" id="db-fiscal">
+        <div class="info-box" style="font-size:13px;"><strong>Teoría aplicable:</strong> multiplicador fiscal keynesiano (Canal A del simulador) y monetización del déficit (Canal C) — el CIN es literalmente el mecanismo de "impresión" que la teoría cuantitativa describe cuando el fisco no puede financiarse con ingresos propios.</div>
+        <div style="font-family:'Inter',sans-serif;font-size:10px;color:var(--text3);margin-top:6px;"><strong>Relación con el simulador:</strong> la inversión pública real es literalmente la palanca del Canal Fiscal (Simulador → Canal Fiscal); el Crédito Interno Neto (CIN) es literalmente la palanca del Canal Crédito, y su signo (negativo 2010-2013, positivo 2014) es lo que activa o desactiva ese canal. El balance fiscal SPNF es la etiqueta de "Contexto fiscal" que se muestra automáticamente al elegir año base en el Simulador.</div>
+        <div style="overflow-x:auto;margin-top:12px;">
+        <table class="coef-table">
+          <thead><tr><th>Variable</th><th>2010</th><th>2011</th><th>2012</th><th>2013</th><th>2014</th></tr></thead>
+          <tbody>
+            <tr><td style="text-align:left">Inversión pública ejecutada (MM $us)</td><td>1521.1</td><td>2181.5</td><td>2897.2</td><td>3780.7</td><td>4507.1</td></tr>
+            <tr><td style="text-align:left">Inversión pública real (MM Bs 1990)</td><td>2577</td><td>3244</td><td>4064</td><td>4985</td><td>5508</td></tr>
+            <tr><td style="text-align:left">Balance fiscal SPNF (% PIB, + = déficit)</td><td>-1.68</td><td>-0.83</td><td>-1.76</td><td>-0.65</td><td>3.36</td></tr>
+            <tr><td style="text-align:left">Crédito Interno Neto BCB→SPNF (MM Bs)</td><td>-3730.4</td><td>-4347.3</td><td>-7630.6</td><td>-6644.6</td><td>4596.9</td></tr>
+          </tbody>
+        </table>
+        </div>
+        <h3 style="font-size:13px;color:var(--text2);font-weight:500;margin-top:14px;">Crédito Interno Neto BCB → SPNF — evolución anual (millones de Bs)</h3>
+        <div class="chart-wrap" style="height:220px;"><canvas id="c-datos-fiscal"></canvas></div>
+        <h3 style="font-size:13px;color:var(--text2);font-weight:500;margin-top:14px;">Ingresos y egresos totales del SPNF (miles de millones de Bs)</h3>
+        <div class="chart-wrap" style="height:220px;"><canvas id="c-datos-fiscal-2"></canvas></div>
+      </div>
+
+
+      <div class="datapanel" id="db-monetario">
+        <div class="info-box" style="font-size:13px;"><strong>Teoría aplicable:</strong> teoría cuantitativa del dinero (M·V=P·Y) e IS-LM con tipo de cambio fijo. El detalle interactivo de los 8 agregados y las tasas ya está en la pestaña <strong>Simulador → Canal Monetario</strong>; aquí solo la referencia de datos con granularidad.
+        <div class="def-grid" style="margin-top:14px;">
+          <div class="def-card m1">
+            <div class="def-title m1">M1 y M'1 — Dinero estrecho</div>
+            <div class="def-text"><strong>M1:</strong> Billetes y monedas en poder del público + depósitos a la vista en MN.<br><strong>M'1:</strong> M1 + depósitos a la vista en ME. Refleja la bolivianización.</div>
+          </div>
+          <div class="def-card m2">
+            <div class="def-title m2">M2 y M'2 — Dinero amplio</div>
+            <div class="def-text"><strong>M2:</strong> M1 + depósitos en caja de ahorro en MN.<br><strong>M'2:</strong> M'1 + depósitos en caja de ahorro en ME.</div>
+          </div>
+          <div class="def-card m3">
+            <div class="def-title m3">M3 y M'3 — Liquidez</div>
+            <div class="def-text"><strong>M3:</strong> M2 + depósitos a plazo fijo en MN.<br><strong>M'3:</strong> M'2 + depósitos a plazo fijo en ME.</div>
+          </div>
+          <div class="def-card m4">
+            <div class="def-title m4">M4 y M'4 — Liquidez total</div>
+            <div class="def-text"><strong>M4:</strong> M3 + otros depósitos en MN (restringidos y otros).<br><strong>M'4:</strong> M'3 + otros depósitos en ME. Mayor agregado del BCB.</div>
+          </div>
+        </div>
+      </div>
+        <div style="font-family:'Inter',sans-serif;font-size:10px;color:var(--text3);margin-top:6px;"><strong>Relación con el simulador:</strong> estos 8 agregados (M1-M4') son literalmente las 8 palancas deslizantes del Canal Monetario en Simulador → Canal Monetario — no hay ninguna transformación entre lo que se ve aquí y lo que se mueve allá. Las tasas activas/pasivas alimentan la pendiente LM (h_lm) que traduce ese movimiento en Δr y luego en ΔPIB_mon.</div>
+        <div class="agg-header" style="margin:12px 0;">
+          <h3 style="font-size:13px;color:var(--text2);font-weight:500;">Agregados monetarios y tasas — granularidad seleccionable</h3>
+          <select class="base-sel" id="sel-granularidad" onchange="updateGranularidad()" title="Granularidad de las series de datos">
+            <option value="anual" selected>Vista: Anual</option>
+            <option value="semestral">Vista: Semestral</option>
+            <option value="trimestral">Vista: Trimestral</option>
+            <option value="mensual">Vista: Mensual</option>
+          </select>
+        </div>
+        <div class="chart-wrap" style="height:260px;"><canvas id="c-agg-tiempo"></canvas></div>
+      </div>
+
+
+      <div class="datapanel" id="db-externo">
+        <div class="info-box" style="font-size:13px;"><strong>Teoría aplicable:</strong> restricción de balanza de pagos (Thirlwall) y modelo Mundell-Fleming con TC fijo — el nivel de RIN es la variable que determina si φ (restricción externa) se activa o no. La cobertura de importaciones (usada por φ) es una sola métrica de adecuación de reservas entre varias posibles — se muestra también el criterio Wijnholds-Kapteyn (RIN/M'2) como lectura complementaria, que puede dar una conclusión distinta sobre cuán "cómoda" estaba realmente la posición externa.</div>
+        <div style="font-family:'Inter',sans-serif;font-size:10px;color:var(--text3);margin-top:6px;"><strong>Relación con el simulador:</strong> el RIN en meses es literalmente el valor base de la palanca de Restricción Externa (Simulador → Restricción Externa); la dolarización es la variable que escala θ dinámico del Canal Monetario. Deuda externa y remesas no alimentan ninguna palanca — se muestran para contextualizar por qué 2014 es el "año de quiebre" que sí activa el Canal Crédito.</div>
+        <div style="overflow-x:auto;margin-top:12px;">
+        <table class="coef-table">
+          <thead><tr><th>Variable</th><th>2010</th><th>2011</th><th>2012</th><th>2013</th><th>2014</th></tr></thead>
+          <tbody>
+            <tr><td style="text-align:left">RIN a diciembre (millones $us)</td><td>9.730</td><td>12.019</td><td>13.927</td><td>14.430</td><td>15.123</td></tr>
+            <tr><td style="text-align:left">RIN (meses de importación) — usado por φ</td><td>20.8</td><td>18.2</td><td>19.5</td><td>17.9</td><td>17.0</td></tr>
+            <tr><td style="text-align:left">RIN / M'2 (%) — Wijnholds-Kapteyn, complementario</td><td>115.0</td><td>119.2</td><td>117.3</td><td>104.8</td><td>95.7</td></tr>
+            <tr><td style="text-align:left">Deuda externa pública (millones $us)</td><td>2.891</td><td>3.492</td><td>4.196</td><td>5.262</td><td>5.736</td></tr>
+            <tr><td style="text-align:left">Remesas de trabajadores recibidas (millones $us)</td><td>939,3</td><td>1.012,3</td><td>1.094,3</td><td>1.181,8</td><td>1.163,6</td></tr>
+            <tr><td style="text-align:left">Dolarización de depósitos (%)</td><td>44.1</td><td>35.5</td><td>27.1</td><td>22.3</td><td>18.9</td></tr>
+          </tbody>
+        </table>
+        </div>
+        <div style="font-family:'Inter',sans-serif;font-size:10px;color:var(--text3);margin-top:6px;">Nota sobre Wijnholds-Kapteyn: mientras la cobertura de importaciones dice que 2014 (17,0 meses) sigue holgada, RIN/M'2 cae por debajo de 100% ese mismo año (95,7%) — dos métricas de adecuación de reservas igual de estándar en la literatura pueden dar lecturas distintas sobre el mismo año; ninguna es "la correcta" por sí sola.</div>
+        <h3 style="font-size:13px;color:var(--text2);font-weight:500;margin-top:14px;">RIN (meses de importación) y deuda externa pública (millones $us)</h3>
+        <div class="chart-wrap" style="height:220px;"><canvas id="c-datos-externo"></canvas></div>
+        <h3 style="font-size:13px;color:var(--text2);font-weight:500;margin-top:14px;">Comercio exterior trimestral — exportaciones vs. importaciones (millones $us)</h3>
+        <div class="chart-wrap" style="height:220px;"><canvas id="c-datos-externo-2"></canvas></div>
+        <h3 style="font-size:13px;color:var(--text2);font-weight:500;margin-top:14px;">Remesas de trabajadores recibidas (millones $us)</h3>
+        <div class="chart-wrap" style="height:220px;"><canvas id="c-datos-remesas"></canvas></div>
+      </div>
+
+
+      <div class="datapanel" id="db-precios">
+        <div class="info-box" style="font-size:13px;"><strong>Teoría aplicable:</strong> curva de Phillips vs. Ley de Okun — el hallazgo central del proyecto (choque de 2013) es precisamente que la primera no aplica en ese episodio de shock de oferta; enfermedad holandesa / dependencia de recursos, vía el índice de términos de intercambio (gas + 4 commodities), no solo el gas.</div>
+        <div style="font-family:'Inter',sans-serif;font-size:10px;color:var(--text3);margin-top:6px;"><strong>Relación con el simulador:</strong> la inflación general y núcleo mostradas aquí son exactamente los valores base que la Síntesis del Simulador ajusta (salidas eff-inf/eff-infn); el precio del gas alimenta la narrativa de términos de intercambio (bloque Contexto), no una palanca directa. Ninguna serie de este bloque calibra automáticamente el slider "choque de oferta" de la Síntesis — ese control queda libre para que el usuario lo fije con criterio, usando estos datos como referencia de magnitud razonable.</div>
+        <div class="agg-header" style="margin:12px 0;">
+          <h3 style="font-size:13px;color:var(--text2);font-weight:500;">Inflación — granularidad disponible: mensual</h3>
+        </div>
+        <div class="chart-wrap" style="height:240px;"><canvas id="c-datos-precios"></canvas></div>
+        <h3 style="font-size:13px;color:var(--text2);font-weight:500;margin-top:14px;">Precio de exportación del gas natural (USD/tonelada)</h3>
+        <div class="chart-wrap" style="height:220px;"><canvas id="c-datos-gas"></canvas></div>
+        <div style="overflow-x:auto;margin-top:14px;">
+        <table class="coef-table">
+          <thead><tr><th>Variable (anual)</th><th>2010</th><th>2011</th><th>2012</th><th>2013</th><th>2014</th></tr></thead>
+          <tbody>
+            <tr><td style="text-align:left">Precio exportación gas (USD/ton)</td><td>315.9</td><td>404.4</td><td>488.0</td><td>471.0</td><td>446.4</td></tr>
+          </tbody>
+        </table>
+        </div>
+      </div>
+
+
+      <div class="datapanel" id="db-social">
+        <div class="info-box" style="font-size:13px;"><strong>Teoría aplicable:</strong> Ley de Okun (desempleo-crecimiento) y elasticidad pobreza-PIB — ambas ya calibradas en la pestaña Metodología. 2010 sin dato: el INE no levantó la Encuesta de Hogares ese año.</div>
+        <div style="font-family:'Inter',sans-serif;font-size:10px;color:var(--text3);margin-top:6px;"><strong>Relación con el simulador:</strong> desempleo y pobreza moderada son exactamente los valores base que la Síntesis ajusta vía los coeficientes ε_okun y ε_pob (salidas eff-des/eff-pob). El salario mínimo y el consumo privado son descriptivos — se muestran para contrastar su brecha de crecimiento, pero no son palanca ni entran al motor de cálculo, para no introducir un mecanismo de transmisión salarial sin calibración propia.</div>
+        <div style="overflow-x:auto;margin-top:12px;">
+        <table class="coef-table">
+          <thead><tr><th>Variable</th><th>2010</th><th>2011</th><th>2012</th><th>2013</th><th>2014</th></tr></thead>
+          <tbody>
+            <tr><td style="text-align:left">Tasa de desocupación (%)</td><td><span style="color:var(--text3);font-style:italic;">sin dato</span></td><td>2.65</td><td>2.31</td><td>2.85</td><td>2.34</td></tr>
+            <tr><td style="text-align:left">Pobreza moderada (%)</td><td><span style="color:var(--text3);font-style:italic;">sin dato</span></td><td>45.1</td><td>43.3</td><td>38.9</td><td>39.1</td></tr>
+            <tr><td style="text-align:left">Pobreza extrema (%)</td><td><span style="color:var(--text3);font-style:italic;">sin dato</span></td><td>21.0</td><td>21.6</td><td>18.7</td><td>17.2</td></tr>
+            <tr><td style="text-align:left">Salario Mínimo Nacional (Bs)</td><td>679.5</td><td>815.4</td><td>1000.0</td><td>1200.0</td><td>1440.0</td></tr>
+            <tr><td style="text-align:left">Salario mínimo real, variación anual (%)</td><td>—</td><td>+13.1</td><td>+18.1</td><td>+13.5</td><td>+14.8</td></tr>
+            <tr><td style="text-align:left">Consumo privado real, variación anual (%) — Bloque 1</td><td>—</td><td>+5.2</td><td>+4.6</td><td>+5.9</td><td>+5.4</td></tr>
+            <tr><td style="text-align:left">Afiliados al SIP (miles)</td><td>1361</td><td>1450</td><td>1552</td><td>1670</td><td>1794</td></tr>
+          </tbody>
+        </table>
+        </div>
+        <div style="font-family:'Inter',sans-serif;font-size:10px;color:var(--text3);margin-top:6px;">El salario mínimo real crece muy por encima del consumo privado agregado todos los años (13-18% vs. 5-6%) — es una correlación descriptiva, no una relación causal modelada: el salario mínimo cubre una porción pequeña de la fuerza laboral formal, así que su variación no se traslada 1 a 1 al consumo total. No se incorpora como palanca del motor para no complejizar el alcance de esta versión.</div>
+        <h3 style="font-size:13px;color:var(--text2);font-weight:500;margin-top:14px;">Pobreza moderada, extrema y desocupación (%)</h3>
+        <div class="chart-wrap" style="height:220px;"><canvas id="c-datos-social"></canvas></div>
+        <h3 style="font-size:13px;color:var(--text2);font-weight:500;margin-top:14px;">Salario Mínimo Nacional (Bs)</h3>
+        <div class="chart-wrap" style="height:220px;"><canvas id="c-datos-salario"></canvas></div>
+      </div>
+
+
+      <div class="datapanel" id="db-contexto">
+        <div class="info-box" style="font-size:13px;"><strong>Teoría aplicable:</strong> enfermedad holandesa / dependencia de recursos — el ciclo commodities→IDH→gasto público es el mecanismo clásico de un "resource boom". Antes contábamos ese ciclo solo con el precio del gas; con los otros 4 commodities que ya recopilamos se puede construir un índice de términos de intercambio más completo. El ONI descarta que el choque de 2013 fuera climático de gran escala.</div>
+        <div style="font-family:'Inter',sans-serif;font-size:10px;color:var(--text3);margin-top:6px;"><strong>Relación con el simulador:</strong> este bloque no alimenta ninguna palanca del motor de cálculo — es puramente de contexto e interpretación. Su función es dar criterio para decidir qué tan grande fijar el slider "choque de oferta" en la Síntesis (Simulador) y para leer el índice de presión cambiaria con más matices que el precio del gas por sí solo.</div>
+        <div style="overflow-x:auto;margin-top:12px;">
+        <table class="coef-table">
+          <thead><tr><th>Commodity (promedio anual)</th><th>2010</th><th>2011</th><th>2012</th><th>2013</th><th>2014</th></tr></thead>
+          <tbody>
+            <tr><td style="text-align:left">Zinc (USD/tonelada)</td><td>2160.4</td><td>2195.5</td><td>1950.0</td><td>1910.2</td><td>2161.0</td></tr>
+            <tr><td style="text-align:left">Estaño (USD/tonelada)</td><td>20367</td><td>26051</td><td>21109</td><td>22282</td><td>21899</td></tr>
+            <tr><td style="text-align:left">Plata (USD/onza troy)</td><td>20.16</td><td>35.11</td><td>31.15</td><td>23.83</td><td>19.08</td></tr>
+            <tr><td style="text-align:left">Soya (USD/tonelada)</td><td>385</td><td>484</td><td>538</td><td>517</td><td>458</td></tr>
+            <tr><td style="text-align:left"><strong>Índice de términos de intercambio (gas+4 commodities, 2010=100)</strong></td><td><strong>100,0</strong></td><td><strong>131,5</strong></td><td><strong>128,5</strong></td><td><strong>119,9</strong></td><td><strong>112,5</strong></td></tr>
+          </tbody>
+        </table>
+        </div>
+        <div style="font-family:'Inter',sans-serif;font-size:10px;color:var(--text3);margin-top:6px;">Índice de promedio simple (SUPUESTO de ponderación igual entre los 5 commodities, no ponderado por participación real en las exportaciones — no tenemos esos pesos exactos). <strong>Hallazgo:</strong> el índice amplio pica en 2011 (131,5), no en 2012 como el precio del gas por sí solo (que pica en 488 USD/ton ese año) — la plata, específicamente, ya venía cayendo desde 2011. Contar la "enfermedad holandesa" solo con el gas fecha mal el pico del ciclo de recursos.</div>
+        <h3 style="font-size:13px;color:var(--text2);font-weight:500;margin-top:14px;">Índice de términos de intercambio ampliado vs. precio del gas (2010=100)</h3>
+        <div class="chart-wrap" style="height:200px;"><canvas id="c-datos-tot"></canvas></div>
+        <div class="agg-header" style="margin:14px 0 8px;">
+          <h3 style="font-size:13px;color:var(--text2);font-weight:500;">Índice ONI — granularidad disponible: mensual (estacional)</h3>
+        </div>
+        <div class="chart-wrap" style="height:220px;"><canvas id="c-datos-oni"></canvas></div>
+        <div class="agg-header" style="margin:14px 0 8px;"><h3 style="font-size:13px;color:var(--text2);font-weight:500;">Commodities — promedio mensual</h3></div>
+        <div class="chart-wrap" style="height:220px;"><canvas id="c-datos-commod"></canvas></div>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+<div class="page" id="pg-simulador">
+  <div class="container">
+
+    <div class="section">
+      <div class="section-title">Controles del simulador</div>
+      <div class="agg-section">
+        <div class="agg-header">
+          <h3>Datos base y simulador</h3>
+          <div class="agg-controls">
+            <select class="base-sel" id="baseYear" onchange="updateBase()">
+              <option value="2010" title="2010 no tiene año previo en la muestra (PIB) ni Encuesta de Hogares (empleo/pobreza) — solo se puede ver en modo Histórico, sin simular">Base: diciembre 2010 (solo modo Histórico)</option>
+              <option value="2011">Base: diciembre 2011</option>
+              <option value="2012" selected>Base: diciembre 2012</option>
+              <option value="2013">Base: diciembre 2013</option>
+              <option value="2014">Base: diciembre 2014</option>
+            </select>
+            <button class="reset-btn" onclick="resetToBase()">↺ Restablecer año base</button>
+            <button class="reset-btn" onclick="resetTotal()">⟳ Reset total</button>
+            <div class="agg-mode-toggle" id="modo-toggle-group">
+              <button data-modo="historico" onclick="setModoBtn('historico')" title="Histórico — solo observar: las palancas quedan bloqueadas en el valor del año base">Histórico</button>
+              <button data-modo="contrafactual" class="active" onclick="setModoBtn('contrafactual')" title="Contrafactual — palancas activas, ancladas al año base elegido arriba">Contrafactual</button>
+              <button data-modo="hipotetico" onclick="setModoBtn('hipotetico')" title="Hipotético — rangos ampliados en RIN y CIN, para explorar condiciones fuera de lo observado">Hipotético</button>
+            </div>
+            <select id="sel-modo-sim" style="display:none;">
+              <option value="historico">Histórico — solo observar</option>
+              <option value="contrafactual" selected>Contrafactual — alterar el año base</option>
+              <option value="hipotetico">Hipotético — explorar extremos</option>
+            </select>
+          </div>
+        </div>
+
+      </div>
+      <div id="banner-historico" style="display:none;background:var(--red-bg,#fff0ee);color:var(--red,#ff3b30);border-radius:12px;padding:10px 16px;margin-bottom:10px;font-size:13px;font-weight:600;">
+        🔒 Modo Histórico — las palancas están bloqueadas. Se muestra exactamente el año base observado, sin ninguna modificación. Cambia a Contrafactual o Hipotético para simular.
+      </div>
+      <div id="banner-contrafactual" style="display:none;background:var(--accent3);color:var(--accent);border-radius:12px;padding:10px 16px;margin-bottom:10px;font-size:13px;font-weight:600;">
+        🔓 Modo Contrafactual — las palancas están activas y ancladas al año base elegido arriba. Mueve cualquier canal para preguntar "¿qué habría pasado ese año si...?", dentro de los rangos normales de cada control.
+      </div>
+      <div id="banner-hipotetico" style="display:none;background:var(--amber-bg);color:var(--amber);border-radius:12px;padding:10px 16px;margin-bottom:10px;font-size:13px;font-weight:600;">
+        🧪 Modo Hipotético — rangos ampliados: RIN puede llegar a 0 meses y CIN hasta ±15.000 MM Bs. Permite explorar condiciones que Bolivia no vivió en 2010-2014 (por ejemplo, una crisis de reservas), fuera del rango histórico observado.
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Canales de transmisión</div>
+      <div class="regimen-bar" style="margin-bottom:8px;">
+        <label>Contexto fiscal:</label>
+        <span class="regimen-sel" id="regimen-label" style="cursor:default;">2010–2013 · Superávit fiscal</span>
+        <span class="regimen-desc" id="regimen-desc">Precio gas en ascenso/pico · superávit fiscal · CIN negativo (sin monetización) · bolivianización avanzando</span>
+      </div>
+      <div class="regimen-bar" style="margin-bottom:14px;">
+        <span class="phi-badge" id="phi-activo">φ=0.00 · k_adj=2.66 · β_adj=0.688</span>
+        <span class="regimen-desc" style="font-size:11px;">k_adj alimenta el Canal Fiscal, β_adj alimenta el Canal Crédito — ambos penalizados por φ si las RIN caen bajo el umbral de Restricción Externa.</span>
+      </div>
+      <div class="canal-tabs" style="margin-bottom:14px;">
+        <button class="active" onclick="showSubPanel('sp-fiscal', this)">Canal Fiscal</button>
+        <button onclick="showSubPanel('sp-monetario', this)">Canal Monetario</button>
+        <button onclick="showSubPanel('sp-credito', this)">Canal Crédito</button>
+        <button onclick="showSubPanel('sp-externa', this)">Restricción Externa</button>
+      </div>
+
+      <div class="subpanel active" id="sp-fiscal">
+      <div class="canal-box" style="border-left:4px solid var(--accent);margin-bottom:10px;">
+        <div class="canal-title" id="canal-a-label" style="color:var(--accent);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+          <span id="canal-a-label-text">🏛 CANAL A — FISCAL (dominante · Mundell-Fleming TC fijo · k=2.66)</span>
+          <select id="sel-k-fiscal" class="base-sel" style="font-size:11px;padding:3px 10px;" onchange="onCanalKChange()">
+            <option value="mediana" selected>k: mediana del período</option>
+            <option value="2011">k: transición →2011 (2.54)</option>
+            <option value="2012">k: transición →2012 (2.14)</option>
+            <option value="2013">k: transición →2013 (2.66)</option>
+            <option value="2014">k: transición →2014 (4.02)</option>
+          </select>
+        </div>
+        <div style="font-family:'Inter',sans-serif;font-size:11px;color:var(--text3);margin-bottom:8px;">Con TC fijo la política fiscal es el motor real: inversión pública ejecutada real × multiplicador k (real/real, Opción B — deflactor FBKF-INE). Palanca propia, independiente del canal monetario.</div>
+        <div class="agg-mode-toggle" style="margin-bottom:10px;">
+          <button class="active" onclick="setModeCanal('fiscal','directo',this)">Fiscal → Macro</button>
+          <button onclick="setModeCanal('fiscal','inverso',this)">Macro → Fiscal</button>
+        </div>
+        <div id="fiscal-directo">
+        <div class="slider-group" style="margin-bottom:10px;">
+          <div class="slider-header">
+            <div class="slider-label">Inversión pública real (% del año base)</div>
+            <div class="slider-val" id="sv-inv-real">100%</div>
+          </div>
+          <input type="range" id="sl-inv-real" min="40" max="160" value="100" step="1" oninput="onCanalSliderInput('inv-real')">
+        </div>
+        <div class="canal-flow">
+          <div class="canal-step">ΔInv. pública real<strong id="cn-dinv">+0.00%</strong></div>
+          <div class="canal-arrow">→</div>
+          <div class="canal-step highlight">×k<strong style="font-size:11px;">Multiplicador</strong></div>
+          <div class="canal-arrow">→</div>
+          <div class="canal-step highlight">ΔPIB_fiscal<strong id="cn-dy-f">— pp</strong></div>
+        </div>
+        </div>
+        <div id="fiscal-inverso" style="display:none;">
+          <div class="slider-group" style="margin-bottom:10px;">
+            <div class="slider-header">
+              <div class="slider-label">ΔPIB deseado vía Fiscal (pp)</div>
+              <div class="slider-val" id="sv-meta-fiscal">+0.00 pp</div>
+            </div>
+            <input type="range" id="sl-meta-fiscal" min="-5" max="5" value="0" step="0.1" oninput="onMetaFiscalInput()">
+          </div>
+          <div class="info-box" style="font-size:12px;">Inversión pública real necesaria: <strong id="meta-fiscal-resultado">—</strong>. Se resuelve numéricamente sobre la fórmula real del motor (dY_fiscal = k_adj × ΔInv_real/PIB_real_base × 100), incluida la penalidad por saturación de capacidad si el objetivo la activa — no son pesos ilustrativos, es la fórmula real invertida por búsqueda, igual que el toggle inverso del Canal Crédito.</div>
+        </div>
+      </div>
+
+        <div class="sub-title" style="margin-top:1rem;">Políticas fiscales precargadas</div>
+        <div style="overflow-x:auto;margin-bottom:1rem;">
+          <table class="coef-table">
+            <thead><tr><th>Política</th><th>Instrumento fiscal</th><th>Efecto en inversión real</th><th>Canal activado</th><th>Efecto macro</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Recorte de inversión</strong></td><td>Ajuste presupuestario tipo 2015-2019</td><td>Inversión real al 80%</td><td>A (única — no toca Monetario ni Crédito)</td><td>↓PIB vía multiplicador k</td></tr>
+              <tr><td><strong>Estímulo agresivo</strong></td><td>Expansión del Presupuesto General</td><td>Inversión real al 140%</td><td>A (única)</td><td>↑PIB vía multiplicador k</td></tr>
+              <tr><td><strong>Ajuste gradual</strong></td><td>Consolidación fiscal moderada</td><td>Inversión real al 90%</td><td>A (única)</td><td>↓PIB leve, más sostenible en el tiempo</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="info-box" style="font-size:13px;">A diferencia de las políticas monetarias, estas SOLO mueven el Canal A (inversión pública real) — es una decisión fiscal, no del BCB, y no tiene efecto directo sobre el Canal C ni sobre los agregados monetarios.</div>
+        <div class="policy-grid">
+          <button class="policy-btn" onclick="applyPolicyFiscal('recorte')">
+            <div class="policy-btn-title">✂️ Recorte de inversión</div>
+            <div class="policy-btn-desc">Inversión pública real al 80% del año base (ajuste tipo 2015-2019)</div>
+          </button>
+          <button class="policy-btn" onclick="applyPolicyFiscal('estimulo')">
+            <div class="policy-btn-title">🚀 Estímulo agresivo</div>
+            <div class="policy-btn-desc">Inversión pública real al 140% del año base</div>
+          </button>
+          <button class="policy-btn" onclick="applyPolicyFiscal('gradual')">
+            <div class="policy-btn-title">📉 Ajuste gradual</div>
+            <div class="policy-btn-desc">Inversión pública real al 90% del año base</div>
+          </button>
+        </div>
+      <div class="info-box">Año base seleccionado: <strong id="obs-anio-fiscal">—</strong> · Inversión pública real observada: <strong id="obs-inv-real">—</strong> · El año base se elige en la pestaña <strong>Datos</strong> o <strong>Canal Monetario</strong>.</div>
+
+      </div>
+
+      <div class="subpanel" id="sp-monetario">
+        <div class="agg-mode-toggle" style="margin-bottom:12px;">
+          <button class="active" onclick="setMode('sim',this)">Monetario → Macro</button>
+          <button onclick="setMode('rev',this)">Macro → Monetario</button>
+        </div>
+        <div class="sub-title">Valores editables — miles de bolivianos (fin de diciembre)</div>
+        <div class="sub-title">Valores editables — miles de bolivianos (fin de diciembre)</div>
+        <div class="edit-grid">
+          <div class="edit-cell">
+            <span class="edit-badge bm1">M1</span>
+            <div class="edit-label">Dinero estrecho MN</div>
+            <input class="edit-input" id="inp-m1" type="number" step="1000" oninput="syncInput('m1')">
+            <div class="edit-unit">miles de bolivianos</div>
+          </div>
+          <div class="edit-cell">
+            <span class="edit-badge bm1p">M'1</span>
+            <div class="edit-label">Dinero estrecho MN+ME</div>
+            <input class="edit-input" id="inp-m1p" type="number" step="1000" oninput="syncInput('m1p')">
+            <div class="edit-unit">miles de bolivianos</div>
+          </div>
+          <div class="edit-cell">
+            <span class="edit-badge bm2">M2</span>
+            <div class="edit-label">Dinero amplio MN</div>
+            <input class="edit-input" id="inp-m2" type="number" step="1000" oninput="syncInput('m2')">
+            <div class="edit-unit">miles de bolivianos</div>
+          </div>
+          <div class="edit-cell">
+            <span class="edit-badge bm2p">M'2</span>
+            <div class="edit-label">Dinero amplio MN+ME</div>
+            <input class="edit-input" id="inp-m2p" type="number" step="1000" oninput="syncInput('m2p')">
+            <div class="edit-unit">miles de bolivianos</div>
+          </div>
+          <div class="edit-cell">
+            <span class="edit-badge bm3">M3</span>
+            <div class="edit-label">Liquidez MN</div>
+            <input class="edit-input" id="inp-m3" type="number" step="1000" oninput="syncInput('m3')">
+            <div class="edit-unit">miles de bolivianos</div>
+          </div>
+          <div class="edit-cell">
+            <span class="edit-badge bm3p">M'3</span>
+            <div class="edit-label">Liquidez MN+ME</div>
+            <input class="edit-input" id="inp-m3p" type="number" step="1000" oninput="syncInput('m3p')">
+            <div class="edit-unit">miles de bolivianos</div>
+          </div>
+          <div class="edit-cell">
+            <span class="edit-badge bm4">M4</span>
+            <div class="edit-label">Liquidez total MN</div>
+            <input class="edit-input" id="inp-m4" type="number" step="1000" oninput="syncInput('m4')">
+            <div class="edit-unit">miles de bolivianos</div>
+          </div>
+          <div class="edit-cell">
+            <span class="edit-badge bm4p">M'4</span>
+            <div class="edit-label">Liquidez total MN+ME</div>
+            <input class="edit-input" id="inp-m4p" type="number" step="1000" oninput="syncInput('m4p')">
+            <div class="edit-unit">miles de bolivianos</div>
+          </div>
+        </div>
+
+        <div id="mode-sim">
+          <div class="sub-title">Barras deslizantes — ajusta cada agregado</div>
+          <div id="sliders-container"></div>
+          <div class="sub-title" style="margin-top:1.5rem;">Canal B</div>
+          <div class="canal-box" style="border-left:4px solid var(--blue);margin-bottom:10px;">
+            <div class="canal-title" id="canal-b-label" style="color:var(--blue);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+              <span id="canal-b-label-text">💰 CANAL B — MONETARIO ATENUADO (θ ajustado por dolarización, dinámico)</span>
+              <select id="sel-theta-modo" class="base-sel" style="font-size:11px;padding:3px 10px;" onchange="onCanalKChange()">
+                <option value="dinamico" selected>θ: dinámico por dolarización</option>
+                <option value="fijo">θ: fijo 0.25 (referencia v5)</option>
+              </select>
+            </div>
+            <div style="font-family:'Inter',sans-serif;font-size:11px;color:var(--text3);margin-bottom:8px;">θ mide la eficacia del canal monetario doméstico bajo TC fijo — no es una medida de movilidad de capitales en el sentido estricto de la literatura (esa requeriría un índice de apertura de la cuenta financiera aparte); aquí escala con la dolarización de depósitos, que es sustitución de monedas, un mecanismo relacionado pero distinto. Palanca: los 8 sliders de agregados monetarios de más abajo.</div>
+            <div class="canal-flow">
+              <div class="canal-step">ΔM2 MN<strong id="cn-dm2">+0.00%</strong></div>
+              <div class="canal-arrow">→</div>
+              <div class="canal-step">LM: Δr<strong id="cn-dr">— pp</strong></div>
+              <div class="canal-arrow">→</div>
+              <div class="canal-step">IS: ΔI_priv<strong id="cn-di">— idx</strong></div>
+              <div class="canal-arrow">→</div>
+              <div class="canal-step" style="border-color:var(--amber);">×θ<strong style="font-size:11px;color:var(--amber);">Atenuación M-F</strong></div>
+              <div class="canal-arrow">→</div>
+              <div class="canal-step highlight">ΔPIB_mon<strong id="cn-dy-m">— pp</strong></div>
+            </div>
+          </div>
+
+        </div>
+          <!-- POLÍTICAS -->
+          <div class="sub-title" style="margin-top:2rem;">Políticas monetarias — mecanismo detallado</div>
+          <div class="info-box" style="font-size:13px;">Estas políticas mueven principalmente los agregados M1-M4' (Canal B), pero también nudgean el CIN simulado del Canal C — un año con superávit fuerte puede no activar ese canal aunque la política sea expansiva. Canal A (inversión pública real) es una decisión fiscal, no monetaria: estos botones no lo mueven.</div>
+          <div style="overflow-x:auto;margin-bottom:1.25rem;">
+            <table class="coef-table">
+              <thead><tr><th>Política</th><th>Instrumento BCB</th><th>Efecto en agregados</th><th>Canal activado</th><th>Efecto macro</th></tr>
+              </thead>
+              <tbody>
+                <tr><td><strong>Expansiva</strong></td><td>BCB expande CIN, compra divisas o baja encaje</td><td>M1/M2/M3 MN +15%</td><td>C dominante (CIN +3.000 MM Bs)</td><td>↑PIB · ↓tasa · ↑π</td></tr>
+                <tr><td><strong>Contractiva</strong></td><td>BCB contrae CIN, vende divisas o sube encaje</td><td>M1/M2/M3 −15%</td><td>B atenuado + contracción C (CIN −3.000)</td><td>↓π · ↑tasa · ↓PIB marginal</td></tr>
+                <tr><td><strong>OMA Compra</strong></td><td>BCB compra valores TGN en mercado secundario</td><td>M1 +10% · M2 +5% · M3 +3%</td><td>B (LM→derecha) + C parcial (CIN +1.200)</td><td>↓tasa corto plazo · ↑liquidez</td></tr>
+                <tr><td><strong>OMA Venta</strong></td><td>BCB vende valores TGN al mercado</td><td>M1 −10% · M2 −4% · M3 −2%</td><td>B inverso + C parcial (CIN −800)</td><td>↑tasa · ↓π_núcleo</td></tr>
+                <tr><td><strong>Encaje ↑</strong></td><td>ASFI sube % mínimo de reservas</td><td>M1 +2% · M2/M3 −8%</td><td>B (reduce multiplicador m) + C leve (CIN −400)</td><td>↓crédito · ↑tasa activa</td></tr>
+                <tr><td><strong>Bolivianización</strong></td><td>Encaje diferencial ME&gt;MN · UFV</td><td>MN +12% · ME −2%</td><td>C reforzado (CIN +1.500) + Canal B más efectivo</td><td>↑efectividad pol. monetaria</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="policy-grid">
+            <button class="policy-btn" onclick="applyPolicy('expansiva')">
+              <div class="policy-btn-title">🔼 Política Expansiva</div>
+              <div class="policy-btn-desc">M1/M2/M3 MN +15%. BM↑ → crédito TGN↑ → G↑ → PIB↑</div>
+            </button>
+            <button class="policy-btn" onclick="applyPolicy('contractiva')">
+              <div class="policy-btn-title">🔽 Política Contractiva</div>
+              <div class="policy-btn-desc">M1/M2/M3 −15%. Frena inflación vía demanda. BCB vende RIN.</div>
+            </button>
+            <button class="policy-btn" onclick="applyPolicy('oma-compra')">
+              <div class="policy-btn-title">📈 OMA — Compra de títulos</div>
+              <div class="policy-btn-desc">BCB compra valores → BM↑ → M1 +10%, M2 +5%, M3 +3%</div>
+            </button>
+            <button class="policy-btn" onclick="applyPolicy('oma-venta')">
+              <div class="policy-btn-title">📉 OMA — Venta de títulos</div>
+              <div class="policy-btn-desc">BCB vende valores → absorbe liquidez → M1 −10%, M2 −4%, M3 −2%</div>
+            </button>
+            <button class="policy-btn" onclick="applyPolicy('encaje-sube')">
+              <div class="policy-btn-title">⬆️ Encaje legal sube</div>
+              <div class="policy-btn-desc">Reduce multiplicador bancario. M2/M3 −8%. M1 +2% (desintermediación)</div>
+            </button>
+            <button class="policy-btn" onclick="applyPolicy('bolivianizacion')">
+              <div class="policy-btn-title">🇧🇴 Profundizar bolivianización</div>
+              <div class="policy-btn-desc">Desplaza depósitos ME→MN. MN +12%, ME −2%</div>
+            </button>
+          </div>
+
+          <div class="sub-title" style="margin-top:1.5rem;">Agregados: base histórica vs simulación (miles de Bs)</div>
+          <div class="chart-wrap" style="height:240px;"><canvas id="c-sim"></canvas></div>
+        <div id="mode-rev" style="display:none;">
+          <div class="sub-title">Modifica variables macro — observa efecto estimado en agregados</div>
+          <div class="warn-box">⚠ Efectos calculados con la ecuación cuantitativa M=PY/V y elasticidades de demanda de dinero. Son aproximaciones teóricas.</div>
+          <div class="macro-grid">
+            <div>
+              <div class="slider-group">
+                <div class="slider-header">
+                  <div class="slider-label">Crecimiento PIB real (%)</div>
+                  <div class="slider-val" id="msv-pib">—</div>
+                </div>
+                <input type="range" id="msl-pib" min="0" max="12" step="0.01" oninput="updateMacro()">
+              </div>
+              <div class="slider-group">
+                <div class="slider-header">
+                  <div class="slider-label">Inflación general (%)</div>
+                  <div class="slider-val" id="msv-inf">—</div>
+                </div>
+                <input type="range" id="msl-inf" min="0" max="20" step="0.01" oninput="updateMacro()">
+              </div>
+              <div class="slider-group">
+                <div class="slider-header">
+                  <div class="slider-label">Tasa de desocupación (%)</div>
+                  <div class="slider-val" id="msv-des">—</div>
+                </div>
+                <input type="range" id="msl-des" min="0" max="15" step="0.01" oninput="updateMacro()">
+              </div>
+            </div>
+            <div>
+              <div class="slider-group">
+                <div class="slider-header">
+                  <div class="slider-label">Inversión pública (MM $us)</div>
+                  <div class="slider-val" id="msv-inv">—</div>
+                </div>
+                <input type="range" id="msl-inv" min="500" max="8000" step="10" oninput="updateMacro()">
+              </div>
+              <div class="slider-group">
+                <div class="slider-header">
+                  <div class="slider-label">Pobreza moderada (%)</div>
+                  <div class="slider-val" id="msv-pob">—</div>
+                </div>
+                <input type="range" id="msl-pob" min="10" max="70" step="0.1" oninput="updateMacro()">
+              </div>
+            </div>
+          </div>
+
+          <div class="sub-title">Efecto estimado en agregados monetarios</div>
+          <div class="effects-grid" style="grid-template-columns:repeat(auto-fit,minmax(160px,1fr));">
+            <div class="effect-item">
+              <div class="effect-label"><span class="edit-badge bm1" style="font-size:9px;">M1</span> Dinero estrecho MN</div>
+              <div class="effect-val" id="meff-m1">—</div>
+              <div class="effect-delta" id="meff-m1-d"></div>
+            </div>
+            <div class="effect-item">
+              <div class="effect-label"><span class="edit-badge bm2" style="font-size:9px;">M2</span> Dinero amplio MN</div>
+              <div class="effect-val" id="meff-m2">—</div>
+              <div class="effect-delta" id="meff-m2-d"></div>
+            </div>
+            <div class="effect-item">
+              <div class="effect-label"><span class="edit-badge bm3" style="font-size:9px;">M3</span> Liquidez MN</div>
+              <div class="effect-val" id="meff-m3">—</div>
+              <div class="effect-delta" id="meff-m3-d"></div>
+            </div>
+            <div class="effect-item">
+              <div class="effect-label"><span class="edit-badge bm4p" style="font-size:9px;">M'4</span> Liquidez total</div>
+              <div class="effect-val" id="meff-m4p">—</div>
+              <div class="effect-delta" id="meff-m4p-d"></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="subpanel" id="sp-credito">
+      <div class="canal-box" style="border-left:4px solid var(--purple);margin-bottom:10px;">
+        <div class="canal-title" id="canal-c-label" style="color:var(--purple);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+          <span>🏦 CANAL C — CRÉDITO BCB (nexo real · β=0.688 · empírico VIPFE/BCB) <span id="canal-c-badge" class="phi-badge" style="background:var(--teal-bg);color:var(--teal);">ACTIVO</span></span>
+        </div>
+        <div style="font-family:'Inter',sans-serif;font-size:11px;color:var(--text3);margin-bottom:8px;">El BCB expande su Crédito Interno Neto (CIN) → financia al TGN → efecto multiplicado. Solo transmite si el CIN es positivo (necesidad de financiamiento). El efecto se mide como diferencia respecto al CIN histórico del año base.</div>
+        <div class="agg-mode-toggle" style="margin-bottom:10px;">
+          <button class="active" onclick="setModeCanal('credito','directo',this)">Crédito → Macro</button>
+          <button onclick="setModeCanal('credito','inverso',this)">Macro → Crédito</button>
+        </div>
+        <div id="credito-directo">
+        <div class="slider-group" style="margin-bottom:10px;">
+          <div class="slider-header">
+            <div class="slider-label">CIN fiscal simulado (millones de Bs)</div>
+            <div class="slider-val" id="sv-cin">— MM Bs</div>
+          </div>
+          <input type="range" id="sl-cin" min="-10000" max="10000" value="0" step="100" oninput="onCanalSliderInput('cin')">
+        </div>
+        <div class="canal-flow">
+          <div class="canal-step">CIN simulado (nivel)<strong id="cn-dcin">— MM Bs</strong></div>
+          <div class="canal-arrow">→</div>
+          <div class="canal-step">ΔBM/M3<strong id="cn-dg">+0.00%</strong></div>
+          <div class="canal-arrow">→</div>
+          <div class="canal-step">β=0.688<strong style="font-size:11px;">Empírico</strong></div>
+          <div class="canal-arrow">→</div>
+          <div class="canal-step highlight">ΔPIB_cred<strong id="cn-dy-c">— pp</strong></div>
+          <div class="canal-arrow">→</div>
+          <div class="canal-step warn">Señoreaje<strong id="cn-senoreaje">0.00% PIB</strong></div>
+        </div>
+        </div>
+        <div id="credito-inverso" style="display:none;">
+          <div class="slider-group" style="margin-bottom:10px;">
+            <div class="slider-header">
+              <div class="slider-label">ΔPIB deseado vía Crédito (pp)</div>
+              <div class="slider-val" id="sv-meta-credito">+0.00 pp</div>
+            </div>
+            <input type="range" id="sl-meta-credito" min="-5" max="5" value="0" step="0.1" oninput="onMetaCreditoInput()">
+          </div>
+          <div class="info-box" style="font-size:12px;">CIN simulado necesario: <strong id="meta-credito-resultado">—</strong>. A diferencia del despeje algebraico del Canal Fiscal, aquí se resuelve numéricamente sobre la misma fórmula del motor (rampa sigmoide de activación incluida) — no son pesos ilustrativos, es la fórmula real invertida por búsqueda.</div>
+        </div>
+        <div style="font-family:'Inter',sans-serif;font-size:10px;color:var(--text3);margin-top:6px;">Señoreaje (impuesto inflacionario) = expansión de base monetaria simulada del CIN, como % del PIB nominal del año base — el indicador clásico de finanzas públicas para medir cuánto se está financiando el fisco con emisión en vez de ingresos genuinos. Se calcula sobre el PIB del año base, no sobre el PIB simulado, para mantener la misma convención que ya usa el indicador de déficit fiscal (también expresado como % del PIB base). Nota: el resto del motor asume expectativas estáticas, sin ahorro compensatorio del sector privado (sin equivalencia ricardiana), y sin desplazamiento (crowding-out) de la inversión privada vía tasas de interés cuando el Canal C se activa — se declaran así explícitamente, no se modelan, para no complejizar el alcance de esta versión.</div>
+        <div style="font-family:'Inter',sans-serif;font-size:10px;color:var(--text3);margin-top:6px;">Limitación adicional: el Canal A (inversión pública) y el Canal C (crédito) comparten el mismo multiplicador k, aunque económicamente el financiamiento monetario del déficit no es estrictamente equivalente a la ejecución de inversión pública real. No existe en los datos disponibles una serie separada para calibrar un multiplicador propio del Canal C (solo se cuenta con las 4 transiciones fiscales anuales usadas para k) — se declara esta limitación en vez de introducir un segundo coeficiente sin fuente.</div>
+      </div>
+
+        <div class="sub-title" style="margin-top:1rem;">Políticas de financiamiento precargadas</div>
+        <div style="overflow-x:auto;margin-bottom:1rem;">
+          <table class="coef-table">
+            <thead><tr><th>Política</th><th>Instrumento</th><th>CIN resultante</th><th>Canal activado</th><th>Efecto macro</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Monetización total</strong></td><td>BCB financia todo el déficit vía crédito directo al TGN</td><td>+5.000 MM Bs</td><td>C — activo (CIN&gt;0)</td><td>↑PIB vía β·k, presión inflacionaria monetaria</td></tr>
+              <tr><td><strong>Disciplina fiscal estricta</strong></td><td>Superávit forzado, sin recurrir a crédito del BCB</td><td>−8.000 MM Bs</td><td>C — inactivo (CIN≤0)</td><td>Sin efecto vía Crédito; el PIB solo se mueve por Fiscal/Monetario</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="info-box" style="font-size:13px;">Estas políticas SOLO mueven el Canal C (CIN simulado) — no tocan la inversión pública real (Canal A) ni los agregados monetarios (Canal B) directamente.</div>
+        <div class="policy-grid">
+          <button class="policy-btn" onclick="applyPolicyCredito('monetizacion')">
+            <div class="policy-btn-title">🖨️ Monetización total del déficit</div>
+            <div class="policy-btn-desc">CIN simulado a +5.000 MM Bs — el BCB financia todo el faltante</div>
+          </button>
+          <button class="policy-btn" onclick="applyPolicyCredito('disciplina')">
+            <div class="policy-btn-title">🔒 Disciplina fiscal estricta</div>
+            <div class="policy-btn-desc">CIN simulado a −8.000 MM Bs — superávit forzado, canal inactivo</div>
+          </button>
+        </div>
+      <div class="info-box">Año base seleccionado: <strong id="obs-anio-credito">—</strong> · CIN observado: <strong id="obs-cin">—</strong> · CIN negativo (2010-2013) = superávit, canal inactivo. CIN positivo (2014) = déficit monetizado, canal activo. Mueve el slider fuera del rango histórico para explorar hipótesis.</div>
+
+      </div>
+
+      <div class="subpanel" id="sp-externa">
+      <div class="canal-box" style="border-left:4px solid var(--red);margin-bottom:10px;">
+        <div class="canal-title" style="color:var(--red);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+          <span id="phi-umbral-label">🌐 RESTRICCIÓN EXTERNA φ — RIN (rampa continua, umbral 6 meses)</span>
+          <select id="sel-umbral-phi" class="base-sel" style="font-size:11px;padding:3px 10px;" onchange="onUmbralPhiChange()">
+            <option value="6" selected>Umbral: 6 meses (estándar)</option>
+            <option value="12">Umbral: 12 meses (conservador)</option>
+          </select>
+        </div>
+        <div style="font-family:'Inter',sans-serif;font-size:11px;color:var(--text3);margin-bottom:8px;">Penaliza k y β cuando las RIN caen por debajo del umbral. Inerte todo 2010-2014 (17-21 meses de importación) — la historia real nunca la activó. Palanca propia para explorar qué pasaría con RIN más bajas.</div>
+        <div style="font-family:'Inter',sans-serif;font-size:10px;color:var(--text3);margin-bottom:8px;">A diferencia de Fiscal, Crédito y Monetario, este canal no tiene un toggle "→ Macro / Macro →": φ no es un canal que produzca su propio efecto en el PIB, es un atenuador multiplicativo de k_adj (Fiscal) y β_adj (Crédito) — no hay un "ΔPIB propio de la Restricción Externa" del cual partir para invertir nada; ya se expresa 100% en términos de esos otros dos canales. El dato equivalente a una "meta inversa" aquí ya es directo: el <strong>RIN mínimo antes de penalizar es exactamente el umbral seleccionado arriba</strong> (6 o 12 meses) — por debajo de ese valor φ&gt;0 y penaliza; por encima, φ=0.</div>
+        <div class="slider-group" style="margin-bottom:10px;">
+          <div class="slider-header">
+            <div class="slider-label">RIN (meses de importación)</div>
+            <div class="slider-val" id="sv-rin">— meses</div>
+          </div>
+          <input type="range" id="sl-rin" min="1" max="22" value="18" step="0.5" oninput="onCanalSliderInput('rin')">
+        </div>
+        <div class="info-box">Año base seleccionado: <strong id="obs-anio-externa">—</strong> · RIN observada: <strong id="obs-rin">—</strong></div>
+      </div>
+
+      <div class="chart-card">
+        <h3>RIN en meses de importación (umbral φ = 6) — histórico</h3>
+        <div class="chart-src">BCB, Cuadro 1.4.5.2 · Reservas Internacionales Netas</div>
+        <div class="chart-wrap"><canvas id="c-rin-externa"></canvas></div>
+      </div>
+
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Síntesis — se recalcula con cualquier palanca de cualquier canal</div>
+          <div class="canal-box" style="border-left:4px solid var(--text3);background:var(--bg3);margin-bottom:10px;">
+            <div class="canal-title">⚖ SÍNTESIS — PIB total y canal AS-AD (no Phillips)</div>
+            <div class="canal-flow" style="flex-wrap:wrap;gap:8px;margin-bottom:8px;">
+              <div class="canal-step" style="background:var(--bg2);">Canal A/C<strong style="font-size:11px;">fiscal+crédito</strong></div>
+              <div class="canal-step" style="background:var(--bg2);">k×β×ΔM3<strong id="cn-dy-f-s" style="font-size:11px;">pp</strong></div>
+              <div style="align-self:center;color:var(--text3);font-size:16px;">+</div>
+              <div class="canal-step" style="background:var(--bg2);">Canal B<strong style="font-size:11px;">monetario puro</strong></div>
+              <div class="canal-step" style="background:var(--bg2);">θ×k×ΔI<strong id="cn-dy-m-s" style="font-size:11px;">pp</strong></div>
+              <div class="canal-arrow">=</div>
+              <div class="canal-step highlight">ΔPIB total<strong id="cn-dy-tot">— pp</strong></div>
+            </div>
+            <div class="canal-flow">
+              <div class="canal-step">ΔM'4<strong id="cn-dm4p">+0.00%</strong></div>
+              <div class="canal-arrow">→</div>
+              <div class="canal-step">ΔV<strong id="cn-dv" style="font-size:11px;">velocidad</strong></div>
+              <div class="canal-arrow">→</div>
+              <div class="canal-step">Δπ_demanda<strong id="cn-dinf-d">— pp</strong></div>
+              <div class="canal-arrow">+</div>
+              <div class="canal-step warn" style="font-size:11px;">Δπ_oferta<strong id="cn-dinf-ofe">+0.00 pp</strong></div>
+              <div class="canal-arrow">=</div>
+              <div class="canal-step warn">Δπ total<strong id="cn-dinf">— pp</strong></div>
+              <div class="canal-arrow">→</div>
+              <div class="canal-step">Okun Δu<strong id="cn-du">— pp</strong></div>
+              <div class="canal-arrow">→</div>
+              <div class="canal-step">Δpob<strong id="cn-dpob">— pp</strong></div>
+            </div>
+
+            <div class="slider-group" style="margin-top:12px;">
+              <div class="slider-header">
+                <div class="slider-label">Choque de oferta (climático/logístico) — pp añadidos a la inflación</div>
+                <div class="slider-val" id="sv-choque-oferta">0.0 pp</div>
+              </div>
+              <input type="range" id="sl-choque-oferta" min="0" max="10" value="0" step="0.1" oninput="onChoqueOfertaInput()">
+            </div>
+            <button class="reset-btn" onclick="aplicarChoque2013()" style="margin-top:6px;">💥 Aplicar choque 2013 (2.4 pp)</button>
+            <div style="font-family:'Inter',sans-serif;font-size:10px;color:var(--text3);margin-top:6px;">Palanca independiente del ONI a propósito: el choque de 2013 (papa/tomate/pollo, +2.38 pp de brecha general-núcleo) coincidió con un ONI casi neutro (Hoja 21 / pestaña Datos → Contexto) — no fue un evento climático de gran escala, así que no forzamos una fórmula que lo ate al ONI. Usa este slider para explorar un choque de oferta de cualquier origen y magnitud; 2.4 pp reproduce aproximadamente la intensidad observada en 2013.</div>
+            <div style="font-family:'Inter',sans-serif;font-size:10px;color:var(--text3);margin-top:8px;">En 2013, u y π subieron juntos → estanflación de oferta → se usa Ley de Okun (ε=−0.30) en vez de Phillips <em>para ese episodio</em>. No es una regla general para Bolivia: 2011 tiene el perfil contrario — inflación núcleo (8,79%) superó a la general (6,90%), compatible con un episodio de demanda. De los 4 años con datos completos, Phillips y Okun conviven en el mismo período según el año que se mire.</div>
+          </div>
+
+          <!-- EFECTOS -->
+          <div class="sub-title">Resultados estimados</div>
+          <div class="effects-grid" style="grid-template-columns:repeat(auto-fit,minmax(145px,1fr));">
+            <div class="effect-item"><div class="effect-label">PIB real (%)</div><div class="effect-val" id="eff-pib">—</div><div class="effect-delta" id="eff-pib-d"></div></div>
+            <div class="effect-item"><div class="effect-label">Inflación total (%)</div><div class="effect-val" id="eff-inf">—</div><div class="effect-delta" id="eff-inf-d"></div></div>
+            <div class="effect-item"><div class="effect-label">Inflación núcleo (%)</div><div class="effect-val" id="eff-infn">—</div><div class="effect-delta" id="eff-infn-d"></div></div>
+            <div class="effect-item"><div class="effect-label">Tasa activa MN (%)</div><div class="effect-val" id="eff-tasa">—</div><div class="effect-delta" id="eff-tasa-d"></div></div>
+            <div class="effect-item"><div class="effect-label">Desocupación (%)</div><div class="effect-val" id="eff-des">—</div><div class="effect-delta" id="eff-des-d"></div></div>
+            <div class="effect-item"><div class="effect-label">Pobreza moderada (%)</div><div class="effect-val" id="eff-pob">—</div><div class="effect-delta" id="eff-pob-d"></div></div>
+            <div class="effect-item"><div class="effect-label">Inv. privada (idx=100)</div><div class="effect-val" id="eff-inv">—</div><div class="effect-delta" id="eff-inv-d"></div></div>
+            <div class="effect-item"><div class="effect-label">Presión cambiaria (idx)</div><div class="effect-val" id="eff-cam">—</div><div class="effect-delta" id="eff-cam-d"></div></div>
+          </div>
+
+          <div class="info-box" style="font-size:13px;">El detalle de cada coeficiente (fuente, cálculo, etiqueta OBSERVADO/CALIBRADO/SUPUESTO) está en la pestaña <strong>Metodología</strong>.</div>
+
+
+          <!-- ══ PANEL DE ALERTAS SEMÁFORO ══ -->
+          <div class="alertas-panel">
+            <div class="alertas-title">⚡ Sistema de alertas — 5 umbrales críticos</div>
+            <div id="alerta-rin"       class="alerta-item alerta-verde" title="Verde: RIN ≥ 6 meses de importación · Naranja: 3-6 meses · Rojo: menos de 3 meses">🟢 RIN — cargando...</div>
+            <div id="alerta-cam"       class="alerta-item alerta-verde" title="Verde: brecha ≤ 8% · Naranja: 8-15% · Rojo: más de 15%">🟢 Brecha cambiaria — cargando...</div>
+            <div id="alerta-inf-alim"  class="alerta-item alerta-verde" title="Verde: ≤ 6% anual · Naranja: 6-10% · Rojo: más de 10%">🟢 Inflación alimentos — cargando...</div>
+            <div id="alerta-deficit"   class="alerta-item alerta-verde" title="Verde: déficit ≤ 3% del PIB · Naranja: 3-5% · Rojo: más de 5%">🟢 Déficit fiscal — cargando...</div>
+            <div id="alerta-dolar"     class="alerta-item alerta-verde" title="Verde: dolarización ≤ 45% · Naranja: 45-60% · Rojo: más de 60%">🟢 Dolarización financiera — cargando...</div>
+          </div>
+
+    </div>
+
+  </div>
+</div>
+
+<div class="page" id="pg-metodologia">
+  <div class="container">
+    <div class="section">
+      <div class="section-title">Coeficientes del motor — etiquetados</div>
+      <p style="font-size:13px;color:var(--text2);margin:-8px 0 14px;">
+        <span style="color:var(--teal);font-weight:600;">OBSERVADO</span> = dato de fuente primaria, sin transformar &nbsp;·&nbsp;
+        <span style="color:var(--amber);font-weight:600;">CALIBRADO</span> = derivado de los datos con método declarado, no estimación econométrica — en la mayoría de los casos es la razón entre una sola transición anual (2012→2013), no una elasticidad estructural con controles ni significancia estadística; ver nota en cada fila &nbsp;·&nbsp;
+        <span style="color:var(--red);font-weight:600;">SUPUESTO</span> = decisión de especificación, declarada y con alternativa comparable en la propia herramienta.
+      </p>
+      <table class="coef-table">
+        <thead><tr><th>Relación</th><th>Canal</th><th>Coeficiente</th><th>Tipo</th><th>Cálculo / Fuente</th></tr></thead>
+        <tbody>
+          <tr><td>k multiplicador fiscal (real/real)</td><td>A</td><td class="coef-ok">2.14–4.02</td><td><span style="color:var(--amber);font-weight:600;">CALIBRADO</span></td><td>ΔPIB real/ΔInv real (Bs 1990, deflactor FBKF-INE) · rango por transición, desplegable en Canal A. <strong>Comparación con literatura:</strong> Ilzetzki, Mendoza &amp; Végh (2013, <em>Journal of Monetary Economics</em>) reportan, para economías con TC fijo (nuestro caso), un multiplicador de 0,15 de impacto que sube a 1,4 en el largo plazo — nuestro rango queda por encima incluso de ese máximo de largo plazo. Puede reflejar particularidades bolivianas (economía relativamente cerrada, capacidad ociosa), pero con n=4 no se puede distinguir eso de fragilidad muestral — se declara la comparación para que el lector lo evalúe.</td></tr>
+          <tr><td>θ eficacia del canal doméstico</td><td>B</td><td class="coef-ok">dinámico</td><td><span style="color:var(--red);font-weight:600;">SUPUESTO</span></td><td>θ=0.25·(dolarización 2012/dolarización año base) · escala con sustitución de monedas, NO con apertura de la cuenta de capital (serían dos mecanismos distintos de la literatura) · alternativa fija disponible en Canal B</td></tr>
+          <tr><td>h sensibilidad LM</td><td>B</td><td class="coef-ok">6.39</td><td><span style="color:var(--amber);font-weight:600;">CALIBRADO</span></td><td>ΔM2/Δr=17.75%/2.78pp · BCB tasas 2012→2013 · razón de una sola transición anual, no una elasticidad estructural estimada con controles</td></tr>
+          <tr><td>β crédito BCB→M3</td><td>C</td><td class="coef-ok">0.688 cond.</td><td><span style="color:var(--teal);font-weight:600;">OBSERVADO</span> + <span style="color:var(--red);font-weight:600;">SUPUESTO</span></td><td>ΔM3/ΔInv=20.99%/30.50% (BCB/VIPFE), 2012→2013 · razón de una sola transición anual, no una elasticidad estructural · activación condicional al signo del CIN es supuesto de especificación aparte</td></tr>
+          <tr><td>Activación Canal C</td><td>C</td><td class="coef-ok">CIN &gt; 0</td><td><span style="color:var(--teal);font-weight:600;">OBSERVADO</span></td><td>Identidad contable — CIN fiscal, Cuadro 3.1.1 UDAPE/MEFP</td></tr>
+          <tr><td>ΔV velocidad circulación</td><td>—</td><td class="coef-ok">dinámico</td><td><span style="color:var(--teal);font-weight:600;">OBSERVADO</span></td><td>V=PIB nominal/M4′ · se recalcula con cada simulación (antes era una constante fija de -4.47%, corregido en v10)</td></tr>
+          <tr><td>Okun ε</td><td>—</td><td class="coef-ok">−0.30</td><td><span style="color:var(--amber);font-weight:600;">CALIBRADO</span></td><td>u y π subieron juntos → choque oferta → se usa Okun, no Phillips · razón de una sola transición anual (2012→2013), no una elasticidad estructural estimada con controles</td></tr>
+          <tr><td>ε pobreza-PIB</td><td>—</td><td class="coef-ok">−0.647</td><td><span style="color:var(--amber);font-weight:600;">CALIBRADO</span></td><td>Δpob/ΔPIB=−4.4pp/6.80pp · INE 3.06.01.01, 2012→2013 · razón de una sola transición anual, no una elasticidad estructural estimada con controles</td></tr>
+          <tr><td>φ restricción externa</td><td>Externo</td><td class="coef-ok">rampa continua</td><td><span style="color:var(--red);font-weight:600;">SUPUESTO</span></td><td>φ=clamp((6−RIN_meses)/6·0.5,0,0.5) · umbral de 6 meses es convención estándar de adecuación de reservas</td></tr>
+          <tr><td>Techo de capacidad productiva</td><td>A+C</td><td class="coef-ok">1.08</td><td><span style="color:var(--red);font-weight:600;">SUPUESTO</span></td><td>Penaliza dY_fiscal/dY_credito si el PIB simulado supera 108% del base · pendiente de penalización (2.5) y piso (0.1) también declarados, no calibrados contra datos de brecha de producto</td></tr>
+          <tr><td>Factor de escala Canal B (dY_monetario)</td><td>B</td><td class="coef-ok">0.06</td><td><span style="color:var(--red);font-weight:600;">SUPUESTO</span></td><td>Ajusta la magnitud de dY_monetario a un rango plausible frente a A y C · declarado, no calibrado contra ningún dato</td></tr>
+          <tr><td>Pass-through inflación de demanda</td><td>Síntesis</td><td class="coef-ok">0.35</td><td><span style="color:var(--red);font-weight:600;">SUPUESTO</span></td><td>Traspaso de exceso monetario (dM_pond−dY_total) a inflación de demanda · declarado, no calibrado, a diferencia de k_fiscal/h_lm/beta_cred</td></tr>
+          <tr><td>Sensibilidad presión cambiaria a M4′</td><td>Externo</td><td class="coef-ok">15</td><td><span style="color:var(--red);font-weight:600;">SUPUESTO</span></td><td>Convierte la expansión de M4′ en puntos del índice de presión cambiaria (0-100) · declarado, no calibrado</td></tr>
+          <tr><td>Peso alimentos·demanda (alerta)</td><td>Síntesis</td><td class="coef-ok">1.3</td><td><span style="color:var(--red);font-weight:600;">SUPUESTO</span></td><td>Sensibilidad supuesta de la inflación de alimentos al componente de demanda, en la alerta de alimentos · declarado, no calibrado</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Fuentes de datos — inventario completo (54 fuentes primarias)</div>
+      <p style="font-size:13px;color:var(--text2);margin:-8px 0 14px;">Cada fuente con su documento/archivo exacto, cuadro o código, institución, cobertura temporal, unidad y dónde se usa dentro de la herramienta — nivel de detalle verificable para trabajo académico.</p>
+      <div style="overflow-x:auto;">
+      <table class="coef-table">
+        <thead><tr><th>Archivo</th><th>Cuadro/código</th><th>Institución</th><th>Descripción</th><th>Cobertura</th><th>Unidad</th><th>Uso en la herramienta</th></tr></thead>
+        <tbody>
+          <tr><td>01_01_01.xlsx</td><td>Cuadro 1.01.01</td><td>INE</td><td style='text-align:left'>PIB precios constantes 1990 por actividad económica</td><td>1990-2024, trimestral</td><td>Miles Bs. de 1990</td><td style='text-align:left'>Hoja 01 — panel completo por actividad</td></tr>
+          <tr><td>01_02_01.xlsx</td><td>Cuadro 1.02.01</td><td>INE</td><td style='text-align:left'>PIB precios corrientes por actividad económica</td><td>1990-2024, trimestral</td><td>Miles Bs corrientes</td><td style='text-align:left'>Hoja 01 — panel completo por actividad</td></tr>
+          <tr><td>01_02_03.xlsx</td><td>Cuadro 1.02.03</td><td>INE</td><td style='text-align:left'>Deflactor implícito del PIB por actividad económica</td><td>1990-2024, trimestral</td><td>Índice (1990=100)</td><td style='text-align:left'>No usado aún — disponible para Fase 2 (deflactores por sector)</td></tr>
+          <tr><td>02_01_01.xlsx</td><td>Cuadro 2.01.01</td><td>INE</td><td style='text-align:left'>PIB precios constantes 1990 por tipo de gasto (C,G,FBKF,X,M)</td><td>1990-2024, trimestral</td><td>Miles Bs. de 1990</td><td style='text-align:left'>Hoja 02 — panel completo por tipo de gasto</td></tr>
+          <tr><td>02_02_01.xlsx</td><td>Cuadro 2.02.01</td><td>INE</td><td style='text-align:left'>PIB precios corrientes por tipo de gasto</td><td>1990-2024, trimestral</td><td>Miles Bs corrientes</td><td style='text-align:left'>Hoja 02 — panel completo, y FBKF nominal usada en Hoja 04</td></tr>
+          <tr><td>02_02_03.xlsx</td><td>Cuadro 2.02.03</td><td>INE</td><td style='text-align:left'>Deflactor implícito del PIB por tipo de gasto</td><td>1990-2024, trimestral</td><td>Índice (1990=100)</td><td style='text-align:left'>No usado aún — disponible para Fase 2</td></tr>
+          <tr><td>03_02_03.xlsx</td><td>Cuadro 3.02.03</td><td>INE</td><td style='text-align:left'>Deflactor implícito oferta y demanda final por componente</td><td>1990-2024, trimestral</td><td>Índice (1990=100)</td><td style='text-align:left'>No usado aún — disponible para Fase 2</td></tr>
+          <tr><td>3_7_1_inversion_publica_por_sectores.xls</td><td>Cuadro 3.7.1</td><td>UDAPE / VIPFE (MPD)</td><td style='text-align:left'>Inversión pública ejecutada por sector</td><td>1990-2022, anual</td><td>Miles USD</td><td style='text-align:left'>Hoja 03 — bloque 2008-2014, columna "Ejec."</td></tr>
+          <tr><td>3_7_2_inversion_publica_por_fuente_de_financiamiento.xls</td><td>Cuadro 3.7.2</td><td>UDAPE / VIPFE (MPD)</td><td style='text-align:left'>Inversión pública por fuente de financiamiento (incl. IDH aplicado a inversión)</td><td>1990-2022, anual</td><td>Miles USD</td><td style='text-align:left'>Hoja 03 — bloque 2010-2014</td></tr>
+          <tr><td>Imagen: Cotizaciones Oficiales del Boliviano (2010)</td><td>s/n</td><td>BCB, Gerencia de Operaciones Internacionales</td><td style='text-align:left'>Tipo de cambio oficial diario y promedio mensual, venta/compra</td><td>2010, diario y PROM mensual</td><td>Bs/USD</td><td style='text-align:left'>Hoja 04 — tabla auxiliar, cierra el TC 2010</td></tr>
+          <tr><td>Imagen: Cotizaciones Oficiales del Boliviano (2011)</td><td>s/n</td><td>BCB, Gerencia de Operaciones Internacionales</td><td style='text-align:left'>Tipo de cambio oficial diario y promedio mensual, venta/compra</td><td>2011, diario y PROM mensual</td><td>Bs/USD</td><td style='text-align:left'>Hoja 04 — tabla auxiliar (A), cierra el TC venta 2011</td></tr>
+          <tr><td>1_4_4_1_tipo_de_cambio_para_ajuste_de_cuentas_bancarias.xls</td><td>Cuadro 1.4.4.1</td><td>BCB, Sector Monetario</td><td style='text-align:left'>TC compra de fin de mes, usado por ASFI para ajuste de cuentas bancarias</td><td>1980-2024, mensual</td><td>Bs/USD</td><td style='text-align:left'>Hoja 04 — tabla auxiliar (B), criterio de TC alternativo</td></tr>
+          <tr><td>1_3_1_1Operaciones_consolidadas_del_sector_publico_no_financiero.xls</td><td>Cuadro 3.1.1</td><td>UDAPE/MEFP</td><td style='text-align:left'>Ingresos, egresos, balance fiscal (SUP/DÉF) y Crédito Interno/Externo Neto del SPNF</td><td>1990-2024, anual</td><td>Millones Bs</td><td style='text-align:left'>Hoja 06 — Bloque 2 completo</td></tr>
+          <tr><td>1_3_4_1_recaudacion_por_actividad_y_tipo_de_impuesto.xls</td><td>Cuadro 3.4.1</td><td>UDAPE/SIN</td><td style='text-align:left'>Recaudación Renta Interna por tipo de impuesto (incl. IDH nacional total)</td><td>1987-2024, anual</td><td>Miles Bs</td><td style='text-align:left'>Hoja 07 — IDH nacional total</td></tr>
+          <tr><td>1_3_4_3_recaudacion_por_actividad_y_tipo_de_impuesto_sector_hidrocarburos.xls</td><td>Cuadro 3.4.3</td><td>UDAPE/SIN</td><td style='text-align:left'>Recaudación por actividad (upstream/downstream) del sector hidrocarburos</td><td>2000-2024, anual</td><td>Millones Bs</td><td style='text-align:left'>No tabulado aún — disponible para desagregación futura del canal fiscal-gas</td></tr>
+          <tr><td>1_3_9_1_stock_de_la_deuda_publica_interna_del_tesoro.xls</td><td>Cuadro 3.9.1</td><td>UDAPE/MEFP</td><td style='text-align:left'>Stock de deuda pública interna del TGN, por tenedor</td><td>1993-2022, anual</td><td>Millones USD</td><td style='text-align:left'>Hoja 07 — Deuda interna del SPNF</td></tr>
+          <tr><td>7__Agregados_Monetarios.xlsx</td><td>s/n</td><td>BCB, Sector Monetario</td><td style='text-align:left'>M1, M1prime, M2, M2prime, M3, M3prime, M4, M4prime</td><td>1987-2024, mensual</td><td>Miles Bs</td><td style='text-align:left'>Hoja 08 — agregados monetarios</td></tr>
+          <tr><td>2__Base_Monetaria__Determinantes_y_Componentes.xlsx</td><td>s/n</td><td>BCB, Sector Monetario</td><td style='text-align:left'>Base Monetaria y Crédito Neto al Sector Público (lado monetario)</td><td>2001-2024, mensual</td><td>Miles Bs</td><td style='text-align:left'>Hoja 08 — BM y CNSP monetario</td></tr>
+          <tr><td>1__Base_Monetaria.xlsx</td><td>s/n</td><td>BCB, Sector Monetario</td><td style='text-align:left'>Base Monetaria y componentes, versión anual (respaldo/cross-check)</td><td>1970-2022, anual</td><td>Miles Bs</td><td style='text-align:left'>No tabulado — respaldo de Hoja 08</td></tr>
+          <tr><td>4__Encaje_Legal.xlsx</td><td>s/n</td><td>BCB, Tasas Monetarias</td><td style='text-align:left'>Tasas de encaje legal por tipo de depósito y moneda</td><td>1988-2024, mensual</td><td>%</td><td style='text-align:left'>Hoja 10 — tasas de encaje legal</td></tr>
+          <tr><td>1__Deuda_interna_con_el_Sector_Privado.xlsx</td><td>s/n</td><td>BCB, Sector Monetario</td><td style='text-align:left'>Deuda interna del BCB con el sector privado (Letras, Bonos, BCB Directo, RAL)</td><td>2000-2021, anual/mensual</td><td>Millones Bs</td><td style='text-align:left'>Hoja 09 — deuda interna con sector privado</td></tr>
+          <tr><td>2__Financiamiento_a_largo_plazo_al_Sistema_Financiero.xlsx</td><td>s/n</td><td>BCB, Sector Monetario</td><td style='text-align:left'>Financiamiento del BCB a bancos, largo plazo</td><td>1985-2024, mensual</td><td>Miles Bs</td><td style='text-align:left'>Hoja 09 — financiamiento a bancos</td></tr>
+          <tr><td>3__Financiamiento_neto_al_Sector_Público.xlsx</td><td>s/n</td><td>BCB, Sector Monetario</td><td style='text-align:left'>Financiamiento neto del BCB al Sector Público, por sub-sector</td><td>1987-2024, mensual</td><td>Miles Bs</td><td style='text-align:left'>Hoja 09 — CNSP desagregado por sub-sector</td></tr>
+          <tr><td>1_4_2_1_tasas_de_interes_anuales_activas_del_sistema_bancario.xls</td><td>Cuadro 1.4.2.1</td><td>BCB</td><td style='text-align:left'>Tasas activas MN/ME por plazo</td><td>1994-2024, mensual</td><td>%</td><td style='text-align:left'>Hoja 10 — tasas activas</td></tr>
+          <tr><td>1_4_2_2_tasas_de_interes_anuales_pasivas_del_sistema_bancario.xls</td><td>Cuadro 1.4.2.2</td><td>BCB</td><td style='text-align:left'>Tasas pasivas MN/ME por tipo de depósito y plazo</td><td>1994-2024, mensual</td><td>%</td><td style='text-align:left'>Hoja 10 — tasas pasivas</td></tr>
+          <tr><td>1__Sistema_Financiero.xlsx</td><td>s/n</td><td>BCB, Balances Consolidados</td><td style='text-align:left'>Balance consolidado del sistema financiero (Activo: crédito privado; Pasivo: depósitos por moneda)</td><td>1996-2026, mensual</td><td>Miles Bs</td><td style='text-align:left'>Hoja 11 — crédito privado y depósitos por moneda</td></tr>
+          <tr><td>2__Sistema_Bancario.xlsx</td><td>s/n</td><td>BCB, Balances Consolidados</td><td style='text-align:left'>Balance consolidado solo bancos (subconjunto de Sistema Financiero)</td><td>1996-2026, mensual</td><td>Miles Bs</td><td style='text-align:left'>No tabulado — disponible para desagregar banca vs. no bancaria</td></tr>
+          <tr><td>velocidad_de_circulacion.xls</td><td>s/n</td><td>BCB, Sector Monetario</td><td style='text-align:left'>Velocidad de circulación (PIB/M1...M4prime)</td><td>1990-2024, anual</td><td>Ratio</td><td style='text-align:left'>No tabulado — bonus para análisis de velocidad monetaria</td></tr>
+          <tr><td>4__Banco_Central.xlsx</td><td>s/n</td><td>BCB, Balances Consolidados</td><td style='text-align:left'>Balance propio del BCB (RIN brutas, crédito sector público/financiero)</td><td>1996-2026, mensual</td><td>Miles Bs</td><td style='text-align:left'>No tabulado — bonus de reconciliación</td></tr>
+          <tr><td>Financiamiento_de_corto_plazo_al_sistema_financiero.xlsx</td><td>s/n</td><td>BCB, Sector Monetario</td><td style='text-align:left'>Operaciones de reporto (REPORTO), montos y tasas</td><td>2007-2024, mensual</td><td>Miles Bs / %</td><td style='text-align:left'>No tabulado — bonus, mecanismo de transmisión de tasas</td></tr>
+          <tr><td>Titulos_publicos.xlsx</td><td>s/n</td><td>BCB, Sector Monetario</td><td style='text-align:left'>Tasas de adjudicación de títulos públicos (LT, LR, LB, CD, BT, BR, BB)</td><td>2007-2024, mensual</td><td>%</td><td style='text-align:left'>No tabulado — bonus, mecanismo de transmisión de tasas</td></tr>
+          <tr><td>c01040502.xls</td><td>Cuadro 1.4.5.2</td><td>BCB</td><td style='text-align:left'>Reservas y Activos Externos Consolidados por tenedor (RIN)</td><td>1990-2024, mensual</td><td>Millones USD</td><td style='text-align:left'>Hoja 12 — RIN</td></tr>
+          <tr><td>c01040501.xls</td><td>Cuadro 1.4.5.1</td><td>BCB</td><td style='text-align:left'>Reservas Internacionales del Sistema Bancario Consolidado</td><td>1990-2024, mensual</td><td>Millones USD</td><td style='text-align:left'>Cross-check de RIN, Hoja 12</td></tr>
+          <tr><td>4__Serie_BOP_T1_2026.xlsx</td><td>s/n</td><td>BCB</td><td style='text-align:left'>Balanza de Pagos (V y VI Manual FMI)</td><td>1996-2025, trimestral</td><td>Millones USD</td><td style='text-align:left'>Hoja 12 — Balanza de Pagos</td></tr>
+          <tr><td>c01020204.xls</td><td>Cuadro 1.2.2.4</td><td>BCB</td><td style='text-align:left'>Resumen de Importaciones por Países</td><td>2010-2019, anual</td><td>Millones USD</td><td style='text-align:left'>Hoja 12 — Comercio Exterior</td></tr>
+          <tr><td>c01020203.xls</td><td>Cuadro 1.2.2.3</td><td>BCB</td><td style='text-align:left'>Resumen de Exportaciones por Países</td><td>2010-2019, anual</td><td>Millones USD</td><td style='text-align:left'>Hoja 12 — Comercio Exterior</td></tr>
+          <tr><td>c01020101.xls</td><td>Cuadro 1.2.1.1</td><td>BCB</td><td style='text-align:left'>Cotización Mensual Oficial y Paralela del Dólar</td><td>1957-2024, mensual</td><td>Bs/USD</td><td style='text-align:left'>Hoja 12 — TC oficial/mercado</td></tr>
+          <tr><td>Remesas_de_trabajadores_recibidas_segun_pais_de_origen.xlsx</td><td>s/n</td><td>BCB</td><td style='text-align:left'>Remesas de trabajadores según país de origen</td><td>2006-2024, mensual</td><td>Millones USD</td><td style='text-align:left'>Hoja 13 — Remesas</td></tr>
+          <tr><td>Externa_publica...saldo_adeudado_por_deudor.xlsx</td><td>s/n</td><td>BCB</td><td style='text-align:left'>Deuda Externa Pública de Mediano y Largo Plazo, por deudor</td><td>2009-2024, trimestral</td><td>Millones USD</td><td style='text-align:left'>Hoja 14 — Deuda externa</td></tr>
+          <tr><td>Externa_publica...saldo_adeudado_por_acreedor.xlsx</td><td>s/n</td><td>BCB</td><td style='text-align:left'>Deuda Externa Pública de Mediano y Largo Plazo, por acreedor</td><td>2009-2024, trimestral</td><td>Millones USD</td><td style='text-align:left'>Hoja 14 — Deuda externa</td></tr>
+          <tr><td>c01050201.xls / c01050204.xls</td><td>Cuadros 1.5.2.1 / 1.5.2.4</td><td>INE/UDAPE</td><td style='text-align:left'>IPC mensual e Inflación a 12 meses</td><td>1980-2017, mensual</td><td>Índice / %</td><td style='text-align:left'>Hoja 15</td></tr>
+          <tr><td>IPC-_2007-Alimentos.xlsx</td><td>s/n</td><td>INE/UDAPE</td><td style='text-align:left'>IPC Alimentos, aislado</td><td>2008-2017, mensual</td><td>Índice (2007=100)</td><td style='text-align:left'>Hoja 15</td></tr>
+          <tr><td>Inflacion_nucleo.xlsx / Inflacion_subyacente.xlsx</td><td>s/n</td><td>BCB</td><td style='text-align:left'>Inflación núcleo y subyacente</td><td>1994-2024, mensual</td><td>Variación %</td><td style='text-align:left'>Hoja 16</td></tr>
+          <tr><td>Exportacion_de_hidrocarburos.xlsx</td><td>s/n</td><td>BCB</td><td style='text-align:left'>Exportación de gas natural, volumen y valor</td><td>2012-2026, mensual</td><td>Millones m³ / miles USD</td><td style='text-align:left'>Hoja 17 — Fuente 1</td></tr>
+          <tr><td>Bolivia_-_Exportaciones_segun_Actividad...xlsx</td><td>s/n</td><td>BCB</td><td style='text-align:left'>Exportaciones por producto (incl. gas natural), valor y peso</td><td>1992-2026, mensual</td><td>Millones USD / toneladas</td><td style='text-align:left'>Hoja 17 — Fuente 2, serie principal</td></tr>
+          <tr><td>INDPRODUCTO.xlsx</td><td>s/n</td><td>INE/UDAPE</td><td style='text-align:left'>IPC por producto individual (incl. papa, tomate, pollo)</td><td>2008-2017, mensual</td><td>Índice (2007=100)</td><td style='text-align:left'>Hoja 18 — Choque de alimentos 2013</td></tr>
+          <tr><td>Bitacora_22_23-04.pdf</td><td>s/n</td><td>MEFP</td><td style='text-align:left'>Serie histórica del Salario Mínimo Nacional, 2005-2023</td><td>2005-2023, anual</td><td>Bs</td><td style='text-align:left'>Hoja 19A — cruzada con Decreto Supremo</td></tr>
+          <tr><td>c03020201.xls</td><td>s/n (numeración alterna)</td><td>UDAPE</td><td style='text-align:left'>Salario Mínimo Nacional por año, con Decreto Supremo y fecha</td><td>1991-2019, anual</td><td>Bs</td><td style='text-align:left'>Hoja 19A — fuente principal con respaldo normativo</td></tr>
+          <tr><td>c03020101.xls</td><td>Cuadro 7.2.1 (num. alterna 3.2.1)</td><td>UDAPE, Dossier Social</td><td style='text-align:left'>Población de 10 años o más por condición de actividad y sexo — bloque 2011-2015 usado (dentro de archivo con bloques 1996-2024)</td><td>1996-2024 (bloques por período; 2010 sin encuesta)</td><td>Miles de personas</td><td style='text-align:left'>Hoja 19B — PEA, PO, PD</td></tr>
+          <tr><td>c03020102.xls</td><td>Cuadro 7.2.2 (num. alterna 3.2.2)</td><td>UDAPE, Dossier Social</td><td style='text-align:left'>Indicadores de empleo (incl. Tasa de Desempleo Abierto) — bloque 2011-2015 usado</td><td>1996-2024 (bloques por período; 2010 sin encuesta)</td><td>%</td><td style='text-align:left'>Hoja 19B — Tasa de Desempleo Abierto</td></tr>
+          <tr><td>c03060101.xls</td><td>Cuadro 7.6.1 (num. alterna 3.6.1)</td><td>UDAPE, Dossier Social</td><td style='text-align:left'>Indicadores de pobreza y desigualdad, método línea de pobreza — bloque 2008-2018 usado</td><td>1996-2018 (bloques por período; 2010 sin encuesta)</td><td>%</td><td style='text-align:left'>Hoja 19C — pobreza moderada, extrema, Gini</td></tr>
+          <tr><td>3_1_1_Asegurados_a_la_Seguridad_Social_SIP-Historico.pdf</td><td>s/n</td><td>APS (Autoridad de Fiscalización y Control de Pensiones y Seguros)</td><td style='text-align:left'>Asegurados registrados en el Sistema Integral de Pensiones (SIP), histórico</td><td>1997-2023, anual</td><td>Personas</td><td style='text-align:left'>Hoja 19D — afiliación a seguridad social</td></tr>
+          <tr><td>dataset IMF_RES_PCPS.csv</td><td>G001.PZINC/PTIN/PSILVER/PSOYB.USD.M</td><td>FMI, Primary Commodity Price System (PCPS)</td><td style='text-align:left'>Precios de zinc, estaño, plata y soya, en USD</td><td>1946-2026, mensual</td><td>USD/tonelada, USD/oz troy</td><td style='text-align:left'>Hoja 20 — commodities no gasíferos</td></tr>
+          <tr><td>oni_ascii.txt</td><td>s/n</td><td>NOAA, Climate Prediction Center</td><td style='text-align:left'>Índice Oceánico El Niño (ONI), estacional 3 meses móviles</td><td>1950-presente, estacional</td><td>Anomalía °C</td><td style='text-align:left'>Hoja 21 — índice ENSO</td></tr>
+        </tbody>
+      </table>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Limitaciones declaradas</div>
+      <div class="warn-box">
+        · El multiplicador fiscal es una cota superior gruesa (atribuye a la inversión todo el ΔPIB real de la transición).<br>
+        · φ nunca se activó en la historia observada (RIN 17-21 meses, muy por encima del umbral de 6) — su especificación no ha sido puesta a prueba con estos datos.<br>
+        · 2010 no tiene Encuesta de Hogares ni año previo en la muestra: no es año base válido para el simulador interactivo.<br>
+        · El marco Mundell-Fleming de tipo de cambio fijo es válido para 2010-2014; no es extrapolable al régimen cambiario flexible vigente desde junio de 2026.<br>
+        · Las tasas activas por segmento (2012-2013, detalle por plazo y destino) usan una metodología distinta a la serie de 5 años (promedio simple) — no combinar ambas en el mismo análisis.
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="fuentes">
+  Fuentes completas y coeficientes detallados: pestaña <a href="#" onclick="showPage('pg-metodologia', document.querySelectorAll('.nav-links a')[3])" style="color:var(--accent);">Metodología</a>.
+</div>
+
+<script src="datos_v14.js"></script>
+<script src="scriptv14.js"></script>
+<!-- ══ BOTÓN FLOTANTE DE MANUAL — visible en las 4 pestañas, overlay que no
+     pierde el estado del simulador (no navega, no recarga nada) ══ -->
+<button id="btn-manual-flotante" onclick="toggleManual()"
+  style="position:fixed;bottom:22px;right:22px;z-index:200;background:var(--tinta,#1c2431);color:#fff;border:none;border-radius:999px;padding:12px 20px;font-size:14px;font-weight:600;box-shadow:0 4px 16px rgba(0,0,0,0.25);cursor:pointer;display:flex;align-items:center;gap:8px;">
+  📖 Manual
+</button>
+
+<div id="overlay-manual" style="display:none;position:fixed;inset:0;z-index:300;background:rgba(0,0,0,0.45);"></div>
+<div id="panel-manual" style="display:none;position:fixed;top:0;right:0;bottom:0;width:min(680px,92vw);z-index:301;background:var(--bg,#fff);box-shadow:-8px 0 32px rgba(0,0,0,0.25);overflow-y:auto;overflow-x:hidden;">
+  <div style="position:sticky;top:0;background:var(--bg,#fff);border-bottom:1px solid var(--border,rgba(0,0,0,0.08));padding:16px 20px;display:flex;justify-content:space-between;align-items:center;">
+    <strong style="font-size:15px;">📖 Manual de Uso — SimuMac</strong>
+    <button onclick="toggleManual()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--text2,#6e6e73);">✕</button>
+  </div>
+  <div id="manual-contenido" style="padding:20px 26px 60px;font-size:14.5px;line-height:1.65;color:var(--text,#1d1d1f);">
+    <p style="color:var(--text2,#6e6e73);">Cargando manual…</p>
+  </div>
+</div>
+
+<script>
+let manualCargado = false;
+function toggleManual() {
+  const panel = document.getElementById('panel-manual');
+  const overlay = document.getElementById('overlay-manual');
+  const abierto = panel.style.display === 'block';
+  panel.style.display = abierto ? 'none' : 'block';
+  overlay.style.display = abierto ? 'none' : 'block';
+  if (!abierto && !manualCargado) cargarManual();
+}
+document.getElementById('overlay-manual').addEventListener('click', toggleManual);
+
+function cargarManual() {
+  fetch('manual.md')
+    .then(r => {
+      if (!r.ok) throw new Error('No se encontró manual.md (¿el sitio está desplegado, o se abrió el HTML directo desde el disco?)');
+      return r.text();
+    })
+    .then(md => {
+      document.getElementById('manual-contenido').innerHTML = marked.parse(md);
+      manualCargado = true;
+      /* Dar estilo mínimo a las tablas que genera marked, sin depender de clases externas.
+         Se envuelve cada tabla en un contenedor con scroll horizontal propio, para que
+         una tabla ancha no rompa el ancho del panel en pantallas móviles. */
+      document.querySelectorAll('#manual-contenido table').forEach(t => {
+        t.style.borderCollapse = 'collapse'; t.style.width = '100%'; t.style.marginBottom = '16px'; t.style.fontSize = '13px';
+        t.querySelectorAll('th,td').forEach(c => { c.style.border = '1px solid var(--border,rgba(0,0,0,0.12))'; c.style.padding = '6px 10px'; c.style.textAlign = 'left'; });
+        t.querySelectorAll('th').forEach(c => { c.style.background = 'var(--bg2,#f5f5f7)'; });
+        const wrap = document.createElement('div');
+        wrap.style.overflowX = 'auto';
+        wrap.style.marginBottom = '16px';
+        t.parentNode.insertBefore(wrap, t);
+        wrap.appendChild(t);
+        t.style.marginBottom = '0';
+      });
+      document.querySelectorAll('#manual-contenido h1,#manual-contenido h2,#manual-contenido h3').forEach(h => { h.style.marginTop = '1.2em'; });
+    })
+    .catch(err => {
+      document.getElementById('manual-contenido').innerHTML =
+        '<p style="color:var(--red,#ff3b30);">No se pudo cargar el manual: ' + err.message + '</p>' +
+        '<p style="font-size:13px;color:var(--text2,#6e6e73);">Asegúrate de que <code>manual.md</code> esté en la misma carpeta que este HTML en el sitio publicado.</p>';
+    });
+}
+</script>
+
+</body>
+</html>

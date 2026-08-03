@@ -1,5 +1,18 @@
 /* ══════════════════════════════════════════════════════════════════════
-   SimuMac — SIMULADOR MACROECONÓMICO DE BOLIVIA — versión actual: 14.12.3
+   SimuMac — SIMULADOR MACROECONÓMICO DE BOLIVIA — versión actual: 14.50.2
+   Historial resumido (los comentarios "CORRECCIÓN vX" a lo largo de este
+   archivo documentan en qué versión histórica se hizo cada corrección —
+   se conservan como registro de auditoría, no se renumeran con cada release):
+   1. dY_monetario conectado al PIB total (bug crítico corregido)
+   2. Presión cambiaria reemplazada por índice RIN/importaciones con φ_t
+   3. Selector de régimen estructural (Tabla 2 del artículo)
+   4. Panel de 5 alertas semáforo activo
+   5. Coeficientes documentados con fuente exacta en COEF
+   6. v14.50.2: año base 2010 habilitado en modo Histórico (antes bloqueado
+      del todo); toggles inversos "Macro → Canal" en Fiscal y Crédito, además
+      del ya existente en Monetario (ahora reubicado dentro de su propio
+      canal); recuadros "Relación con el simulador" en los 7 bloques de Datos
+   Fuentes: BCB Memoria 2013, INE Cuadros 6.01.01/3.04/3.06, VIPFE III.10
    ══════════════════════════════════════════════════════════════════════ */
 
 /* ══ NAV ══ */
@@ -46,16 +59,28 @@ function showSubPanel(id, btn) {
    Hipotético: palancas activas con rangos más amplios en RIN y CIN, para
    explorar economías fuera del rango histórico observado. */
 function setModoSimulacion() {
-    const modo = document.getElementById('sel-modo-sim').value;
+    const selModoEl = document.getElementById('sel-modo-sim');
+    let modo = selModoEl.value;
+    /* 2010 no tiene tasa de crecimiento previa ni Encuesta de Hogares — no se
+       puede simular Contrafactual/Hipotético sobre ese año. Si el usuario
+       cambia el Modo mientras 2010 está seleccionado, se revierte a Histórico. */
+    if (modo !== 'historico' && BASE[year] && BASE[year].pib == null) {
+        alert('2010 solo puede verse en modo Histórico (no tiene año previo en la muestra ni Encuesta de Hogares para simular Contrafactual/Hipotético). Se mantiene en Histórico.');
+        selModoEl.value = 'historico';
+        modo = 'historico';
+    }
     const desc = document.getElementById('modo-desc');
-    const banner = document.getElementById('banner-historico');
     const controles = document.querySelectorAll(
         '#sp-fiscal input, #sp-fiscal button, #sp-monetario input, #sp-monetario button, #sp-credito input, #sp-credito button, #sp-externa input, .policy-btn, #sl-choque-oferta'
     );
     const slRin = document.getElementById('sl-rin');
     const slCin = document.getElementById('sl-cin');
 
-    if (banner) banner.style.display = modo === 'historico' ? 'block' : 'none';
+    /* Un banner explicativo por modo — antes solo Histórico lo tenía. */
+    ['historico', 'contrafactual', 'hipotetico'].forEach(m => {
+        const b = document.getElementById('banner-' + m);
+        if (b) b.style.display = modo === m ? 'block' : 'none';
+    });
 
     if (modo === 'historico') {
         controles.forEach(c => c.disabled = true);
@@ -73,7 +98,25 @@ function setModoSimulacion() {
             if (desc) desc.textContent = 'Las palancas están activas y ancladas al año base elegido arriba.';
         }
     }
+    syncModoButtons();
     computeEffects();
+}
+
+/* Los 3 botones de Modo (junto a Reset total) son solo la capa visual; el
+   <select id="sel-modo-sim"> (oculto) sigue siendo la única fuente de verdad
+   que lee el resto del código (incluida la reversión forzada a Histórico
+   para 2010) — así no hay que duplicar esa lógica en dos sitios. */
+function setModoBtn(modo) {
+    const sel = document.getElementById('sel-modo-sim');
+    if (sel) sel.value = modo;
+    setModoSimulacion();
+}
+function syncModoButtons() {
+    const sel = document.getElementById('sel-modo-sim');
+    const val = sel ? sel.value : 'contrafactual';
+    document.querySelectorAll('#modo-toggle-group button').forEach(b => {
+        b.classList.toggle('active', b.dataset.modo === val);
+    });
 }
 
 /* ══ POLÍTICAS PRECARGADAS — CANAL FISCAL Y CANAL CRÉDITO ══════════════
@@ -492,7 +535,9 @@ function initSim() {
     });
     ['pib', 'inf', 'des', 'inv', 'pob'].forEach(k => {
         const sl = document.getElementById('msl-' + k);
-        if (sl) sl.value = d[k];
+        /* d[k] puede ser null en 2010 (pib/des/pob) — no mover el slider en
+           ese caso, solo la etiqueta pasa a "sin dato" (updateMacroLabel). */
+        if (sl && d[k] != null) sl.value = d[k];
         updateMacroLabel(k, d[k]);
     });
     /* Palancas propias por canal (v8) — se reinician al valor observado del año */
@@ -524,6 +569,9 @@ function initSim() {
 function updateMacroLabel(k, v) {
     const el = document.getElementById('msv-' + k);
     if (!el) return;
+    /* v null: campo sin dato para el año base (2010) — evita el "NaN%" que
+       produciría parseFloat(null). */
+    if (v == null) { el.textContent = 'sin dato'; return; }
     if (k === 'inv') el.textContent = '$us ' + Math.round(v);
     else if (k === 'pob') el.textContent = parseFloat(v).toFixed(1) + '%';
     else el.textContent = parseFloat(v).toFixed(2) + '%';
@@ -532,13 +580,21 @@ function updateMacroLabel(k, v) {
 function updateBase() {
     const sel = document.getElementById('baseYear');
     if (sel) year = parseInt(sel.value);
-    /* Defensa adicional: 2010 no tiene año previo en la muestra (pib=null) ni
-       Encuesta de Hogares (des/pob=null). El <option> ya está disabled, pero
-       si algo lo fuerza, no se ejecuta el motor con datos inexistentes. */
+    /* 2010 no tiene año previo en la muestra (pib=null, tasa de crecimiento) ni
+       Encuesta de Hogares (des/pea/pob/pobExt=null). Eso rompe cualquier cálculo
+       que necesite una tasa de crecimiento de la cual partir (Contrafactual e
+       Hipotético), pero NO impide mostrar 2010 en modo Histórico (lectura pura,
+       sin deltas) — el resto de sus campos (agregados monetarios, inflación,
+       CIN, RIN, etc.) sí existen. Por eso ya no se bloquea el año en el <option>;
+       en su lugar, se fuerza el modo a Histórico automáticamente. */
     if (BASE[year] && BASE[year].pib == null) {
-        alert('2010 no puede ser año base del simulador interactivo (sin año previo en la muestra ni Encuesta de Hogares). Se mantiene el año base anterior.');
-        sel.value = String(year === 2010 ? 2012 : year);
-        year = parseInt(sel.value);
+        const selModo = document.getElementById('sel-modo-sim');
+        if (selModo && selModo.value !== 'historico') {
+            selModo.value = 'historico';
+            alert('2010 no tiene año previo en la muestra ni Encuesta de Hogares, así que solo puede verse en modo Histórico (sin simular). Se cambió el modo automáticamente.');
+        }
+        setModoSimulacion();
+        return; /* setModoSimulacion() en modo histórico ya llama a resetTotal(), que llama a initSim() */
     }
     initSim();
 }
@@ -556,7 +612,7 @@ function resetTotal() {
     const b = BASE[year];
     ['pib', 'inf', 'des', 'inv', 'pob'].forEach(k => {
         const sl = document.getElementById('msl-' + k);
-        if (sl) sl.value = b[k];
+        if (sl && b[k] != null) sl.value = b[k];
         updateMacroLabel(k, b[k]);
     });
     updateMacroEffects(b.pib, b.inf, b.des, b.inv, b.pob);
@@ -648,6 +704,11 @@ function applyPolicy(policyKey) {
    ══════════════════════════════════════════════════════════════════════ */
 function computeEffects() {
     const b = BASE[year];
+    /* 2010: b.pib/b.des/b.pob son null (sin año previo / sin Encuesta de Hogares).
+       En modo Histórico las palancas están en 0 delta, pero sin esta guarda la
+       coacción null→0 de JS mostraría "0.00%" en vez de "sin dato" — un resultado
+       que parece un dato real y no lo es. */
+    const pibValido = b.pib != null;
     const pibNomBaseParaV = pibNominalAnual(year); /* usado por señoreaje y por ΔV más abajo */
     const dM1  = (sim.m1  - b.m1)  / b.m1;
     const dM2  = (sim.m2  - b.m2)  / b.m2;
@@ -724,8 +785,8 @@ function computeEffects() {
     /* Penalidad por capacidad productiva (aplica a la suma de A+C, el
        componente con fundamento real de expansión de demanda agregada) */
     const dY_AC = dY_fiscal + dY_credito;
-    const pib_simulado  = b.pib + dY_AC;
-    const capacidad_usada = pib_simulado / (b.pib * COEF.max_capacity);
+    const pib_simulado  = pibValido ? b.pib + dY_AC : null;
+    const capacidad_usada = pibValido ? pib_simulado / (b.pib * COEF.max_capacity) : 0;
     if (capacidad_usada > 0.95) {
         /* SUPUESTO DE ESPECIFICACIÓN: pendiente 2.5 y piso 0.1 son valores de
            diseño declarados, no calibrados contra datos de brecha de producto. */
@@ -743,7 +804,7 @@ function computeEffects() {
        realidad reportada. Se recalcula la capacidad usada con los valores
        YA penalizados, para que el desglose de inflación sea consistente
        con el PIB que efectivamente se muestra al usuario. */
-    const capacidad_usada_final = (b.pib + dY_fiscal + dY_credito) / (b.pib * COEF.max_capacity);
+    const capacidad_usada_final = pibValido ? (b.pib + dY_fiscal + dY_credito) / (b.pib * COEF.max_capacity) : 0;
 
     /* ── CANAL B: MONETARIO ATENUADO (θ_MF dinámico) ───────────────── */
     const dM_liq      = 0.60 * dM1 + 0.40 * dM2;
@@ -761,7 +822,7 @@ function computeEffects() {
 
     /* ── dY_TOTAL = CANAL A + CANAL C + CANAL B (v8: los 3 con palanca propia) */
     const dY_total = dY_fiscal + dY_credito + dY_monetario;
-    const newPIB   = +(b.pib + dY_total).toFixed(2);
+    const newPIB   = pibValido ? +(b.pib + dY_total).toFixed(2) : null;
     const newTasa  = +(tasaRef + delta_r).toFixed(2);
 
     /* ── INFLACIÓN ─────────────────────────────────────────────────── */
@@ -794,9 +855,9 @@ function computeEffects() {
 
     /* ── MERCADO LABORAL Y POBREZA ─────────────────────────────────── */
     const delta_des = COEF.eps_okun * dY_total + 0.05 * delta_inf_ofe;
-    const newDes    = +(b.des + delta_des).toFixed(2);
+    const newDes    = b.des != null ? +(b.des + delta_des).toFixed(2) : null;
     const delta_pob = COEF.eps_pob * dY_total + 0.15 * Math.max(0, delta_inf_dem);
-    const newPob    = +(b.pob + delta_pob).toFixed(1);
+    const newPob    = b.pob != null ? +(b.pob + delta_pob).toFixed(1) : null;
 
     /* ── [FIX 2] ÍNDICE DE PRESIÓN CAMBIARIA — RIN CALIBRADO ──────────
        ANTES (bug): índice arbitrario sin base empírica (50–200)
@@ -992,6 +1053,15 @@ function setEff(vId, dId, val, base, suf, goodIfUp) {
     const elVal   = document.getElementById(vId);
     const elDelta = document.getElementById(dId);
     if (!elVal || !elDelta) return;
+    /* val/base null: el año base no tiene este dato (p. ej. 2010 sin Encuesta
+       de Hogares o sin año previo para el PIB) — mostrar "sin dato", no un
+       0.00% engañoso producto de la coacción null→0 de JS. */
+    if (val == null || base == null) {
+        elVal.textContent = 'sin dato';
+        elDelta.textContent = '— no aplica para este año base';
+        elDelta.className = 'effect-delta';
+        return;
+    }
     elVal.textContent = val + suf;
     const diff = +(val - base).toFixed(2);
     if (Math.abs(diff) < 0.01) {
@@ -1026,6 +1096,19 @@ function updateMacro() {
 function updateMacroEffects(pib, inf, des, inv, pob) {
     const b = BASE[year];
     if (pib === undefined) return;
+    /* 2010: pib/b.pib null — sin base de crecimiento no hay forma honesta de
+       calcular dPIB (tratar null como 0 escalaría los agregados con el valor
+       absoluto del slider, no con un delta real). Se deja "sin dato" en vez
+       de un número que parecería válido sin serlo. */
+    if (pib == null || b.pib == null) {
+        ['meff-m1', 'meff-m2', 'meff-m3', 'meff-m4p'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = 'sin dato';
+            const elD = document.getElementById(id + '-d');
+            if (elD) { elD.textContent = '— no aplica para este año base'; elD.className = 'effect-delta'; }
+        });
+        return;
+    }
     const dPIB = (pib - b.pib) / (b.pib || 1);
     const dInf = (inf - b.inf) / (b.inf || 1);
     const dInv = (inv - b.inv) / (b.inv || 1);
@@ -1098,6 +1181,173 @@ function setMode(mode, btn) {
     const revDiv = document.getElementById('mode-rev');
     if (simDiv) simDiv.style.display = mode === 'sim' ? 'block' : 'none';
     if (revDiv) revDiv.style.display = mode === 'rev' ? 'block' : 'none';
+}
+
+/* ══ TOGGLE GENÉRICO "CANAL → MACRO" / "MACRO → CANAL" (Fiscal, Crédito) ══
+   Análogo a setMode() (Canal Monetario), parametrizado por nombre de canal.
+   Espera dos contenedores hermanos '#<canal>-directo' y '#<canal>-inverso'. */
+function setModeCanal(canal, modo, btn) {
+    const grupo = btn.closest('.agg-mode-toggle');
+    if (grupo) grupo.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const dirDiv = document.getElementById(canal + '-directo');
+    const invDiv = document.getElementById(canal + '-inverso');
+    if (dirDiv) dirDiv.style.display = modo === 'directo' ? 'block' : 'none';
+    if (invDiv) invDiv.style.display = modo === 'inverso' ? 'block' : 'none';
+}
+
+/* Coeficientes vigentes del canal Fiscal/Crédito, ya ajustados por φ (RIN) y
+   por el desplegable de k — misma lógica que el inicio de computeEffects(),
+   factorizada aquí para que los paneles inversos usen EXACTAMENTE los mismos
+   valores que el motor principal, no una copia que se pueda desincronizar. */
+function coefFiscalCreditoVigentes() {
+    const b = BASE[year];
+    const r = REGIMENES[regimenActivo];
+    const rin_slider = document.getElementById('sl-rin');
+    const rin_meses = rin_slider ? parseFloat(rin_slider.value) : b.rin_meses;
+    const phi = calcPhi(rin_meses);
+    const selK = document.getElementById('sel-k-fiscal');
+    const k_base = (selK && selK.value !== 'mediana' && K_FISCAL_TRANSICIONES[selK.value])
+        ? K_FISCAL_TRANSICIONES[selK.value] : r.k_fiscal;
+    return { b, k_adj: k_base * (1 - phi), beta_adj: r.beta_cred * (1 - phi) };
+}
+
+/* dY_fiscal/dY_credito BRUTOS (antes de la penalidad por capacidad productiva)
+   para un invFactor y un cinSim arbitrarios — replica exactamente la primera
+   mitad de computeEffects() (Canales A y C), factorizada para que los paneles
+   inversos puedan evaluar la fórmula real sin duplicar lógica que se pueda
+   desincronizar. */
+function dY_AC_brutos(invFactor, cinSim, b, k_adj, beta_adj) {
+    const pibRealBase = pibRealAnual(year);
+    const invRealBase = b.inv_real_bs1990_miles;
+    const dY_fiscal = k_adj * (invRealBase * (invFactor - 1) / pibRealBase) * 100;
+
+    const ANCHO_RAMPA_CIN = 2000;
+    const activacionCanalC = (cin) => 1 / (1 + Math.exp(-4 * cin / ANCHO_RAMPA_CIN));
+    const expansionHist_miles = activacionCanalC(b.cin_fiscal_mmbs) * b.cin_fiscal_mmbs * 1000;
+    const expansionSim_miles  = activacionCanalC(cinSim) * cinSim * 1000;
+    const dG_implicita = (expansionSim_miles - expansionHist_miles) / b.m3;
+    const dY_credito = k_adj * beta_adj * dG_implicita * 100;
+
+    return { dY_fiscal, dY_credito };
+}
+
+/* Aplica la MISMA penalidad por capacidad productiva que computeEffects()
+   (dY_AC, pib_simulado, capacidad_usada, penalidad — ver esa función para el
+   detalle y las notas de SUPUESTO DE ESPECIFICACIÓN de 0.95/2.5/0.1). Sin
+   esto, un despeje puramente algebraico de dY_fiscal=k_adj×ΔInv/PIB×100
+   puede pedir un ΔPIB que, una vez aplicado, la propia herramienta recorta
+   por saturación de capacidad — dando un resultado final distinto al pedido. */
+function aplicarPenalidadCapacidad(dY_fiscal, dY_credito, b) {
+    if (b.pib == null) return { dY_fiscal, dY_credito };
+    const dY_AC = dY_fiscal + dY_credito;
+    const pib_simulado = b.pib + dY_AC;
+    const capacidad_usada = pib_simulado / (b.pib * COEF.max_capacity);
+    if (capacidad_usada > 0.95) {
+        const penalidad = Math.max(0.1, 1 - (capacidad_usada - 0.95) * 2.5);
+        return { dY_fiscal: dY_fiscal * penalidad, dY_credito: dY_credito * penalidad };
+    }
+    return { dY_fiscal, dY_credito };
+}
+
+/* ══ BÚSQUEDA NUMÉRICA GENÉRICA — usada por Macro→Fiscal y Macro→Crédito ══
+   Ninguna de las dos funciones objetivo está garantizada monótona en todo el
+   rango del slider (dY_credito(cin) tiene un mínimo local cerca de cin≈-500,
+   verificado numéricamente; dY_fiscal(invFactor) deja de ser lineal apenas
+   se activa la penalidad de capacidad). En vez de asumir monotonía y arriesgar
+   una bisección que falle o dé un resultado incorrecto, se hace una búsqueda
+   en grilla + refinamiento local en cada tramo donde la función cruza el
+   objetivo, quedándose con el mejor match — robusto aunque no sea monótona,
+   a costa de no garantizar unicidad de la solución. */
+function resolverEnRango(fn, lo, hi, target) {
+    const N = 400;
+    let best = lo, bestDiff = Math.abs(fn(lo) - target);
+    let prevX = lo, prevVal = fn(lo);
+    for (let i = 1; i <= N; i++) {
+        const x = lo + (hi - lo) * i / N;
+        const val = fn(x);
+        const diff = Math.abs(val - target);
+        if (diff < bestDiff) { bestDiff = diff; best = x; }
+        if ((prevVal - target) * (val - target) <= 0) {
+            let a = prevX, bnd = x;
+            for (let k = 0; k < 40; k++) {
+                const mid = (a + bnd) / 2;
+                const fm = fn(mid);
+                if ((fm - target) * (prevVal - target) <= 0) bnd = mid; else a = mid;
+            }
+            const mid = (a + bnd) / 2;
+            const d2 = Math.abs(fn(mid) - target);
+            if (d2 < bestDiff) { bestDiff = d2; best = mid; }
+        }
+        prevX = x; prevVal = val;
+    }
+    return { x: best, diff: bestDiff };
+}
+
+/* ══ MACRO → FISCAL ══ — objetivo: ΔPIB deseado vía Fiscal (con Crédito fijo
+   en su valor simulado actual, la misma lógica ceteris paribus que usa el
+   motor cuando se mueve un solo canal). Búsqueda numérica sobre la fórmula
+   real, incluida la penalidad de capacidad — no es álgebra pura porque esa
+   penalidad puede activarse y romper la linealidad. */
+function onMetaFiscalInput() {
+    const sl = document.getElementById('sl-meta-fiscal');
+    const target = parseFloat(sl.value);
+    document.getElementById('sv-meta-fiscal').textContent = (target >= 0 ? '+' : '') + target.toFixed(2) + ' pp';
+    const { b, k_adj, beta_adj } = coefFiscalCreditoVigentes();
+    const slCin = document.getElementById('sl-cin');
+    const cinActual = slCin ? parseFloat(slCin.value) : b.cin_fiscal_mmbs;
+    const dYFiscalDe = (invFactor) => {
+        const { dY_fiscal, dY_credito } = dY_AC_brutos(invFactor, cinActual, b, k_adj, beta_adj);
+        return aplicarPenalidadCapacidad(dY_fiscal, dY_credito, b).dY_fiscal;
+    };
+    const slInv = document.getElementById('sl-inv-real');
+    const lo = slInv ? parseFloat(slInv.min) / 100 : 0.40;
+    const hi = slInv ? parseFloat(slInv.max) / 100 : 1.60;
+    const { x: invFactorResult, diff } = resolverEnRango(dYFiscalDe, lo, hi, target);
+    if (slInv) {
+        slInv.value = Math.round(invFactorResult * 100);
+        onCanalSliderInput('inv-real');
+    }
+    const resEl = document.getElementById('meta-fiscal-resultado');
+    if (resEl) {
+        const enLimite = Math.abs(invFactorResult - lo) < 0.001 || Math.abs(invFactorResult - hi) < 0.001;
+        const noAlcanzado = diff > 0.05;
+        resEl.textContent = (invFactorResult * 100).toFixed(1) + '% del año base'
+            + (enLimite ? ' (límite del rango 40%-160% del slider)' : '')
+            + (noAlcanzado ? ' — objetivo no alcanzable exactamente en este rango (la penalidad por capacidad productiva puede estar activándose); se muestra el más cercano' : '');
+    }
+}
+
+/* ══ MACRO → CRÉDITO ══ — mismo enfoque que Macro→Fiscal: búsqueda numérica
+   sobre la fórmula real (sigmoide de activación + penalidad de capacidad),
+   con la inversión pública real fija en su valor simulado actual. */
+function onMetaCreditoInput() {
+    const sl = document.getElementById('sl-meta-credito');
+    const target = parseFloat(sl.value);
+    document.getElementById('sv-meta-credito').textContent = (target >= 0 ? '+' : '') + target.toFixed(2) + ' pp';
+    const { b, k_adj, beta_adj } = coefFiscalCreditoVigentes();
+    const slInv = document.getElementById('sl-inv-real');
+    const invFactorActual = slInv ? parseFloat(slInv.value) / 100 : 1;
+    const dYCreditoDe = (cinSim) => {
+        const { dY_fiscal, dY_credito } = dY_AC_brutos(invFactorActual, cinSim, b, k_adj, beta_adj);
+        return aplicarPenalidadCapacidad(dY_fiscal, dY_credito, b).dY_credito;
+    };
+    const slCin = document.getElementById('sl-cin');
+    const lo = slCin ? parseFloat(slCin.min) : -10000;
+    const hi = slCin ? parseFloat(slCin.max) : 10000;
+    const { x: cinResult, diff } = resolverEnRango(dYCreditoDe, lo, hi, target);
+    if (slCin) {
+        slCin.value = Math.round(cinResult / 100) * 100;
+        onCanalSliderInput('cin');
+    }
+    const resEl = document.getElementById('meta-credito-resultado');
+    if (resEl) {
+        const enLimite = Math.abs(cinResult - lo) < 1 || Math.abs(cinResult - hi) < 1;
+        const noAlcanzado = diff > 0.05;
+        resEl.textContent = (cinResult >= 0 ? '+' : '') + fmt(cinResult) + ' MM Bs'
+            + (enLimite ? ' (límite del rango del slider)' : '')
+            + (noAlcanzado ? ' — objetivo no alcanzable exactamente en este rango; se muestra el más cercano' : '');
+    }
 }
 
 /* ══ DESPLEGABLES POR CANAL — recalcula sin tocar los sliders ══ */
